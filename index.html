@@ -4,7 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Математика 3 класс — Тренажёр</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 16px; color: #2d3748; }
+    .app { background: #fff; border-radius: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 520px; padding: 28px; min-height: 520px; display: flex; flex-direction: column; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 8px; }
+    h1 { font-size: 1.3rem; }
+    h2 { font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
+    .stats { display: flex; gap: 16px; font-size: 0.9rem; color: #4a5568; }
+    .screen { display: none; flex: 1; flex-direction: column; }
+    .screen.active { display: flex; }
+    .modes { display: flex; flex-direction: column; gap: 12px; }
+    .mode-btn { display: flex; flex-direction: column; align-items: flex-start; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 16px; background: #f7fafc; cursor: pointer; transition: all 0.2s; text-align: left; font-family: inherit; }
+    .mode-btn:hover { border-color: #667eea; background: #edf2ff; transform: translateY(-2px); }
+    .mode-btn .icon { font-size: 1.6rem; margin-bottom: 4px; }
+    .mode-btn .title { font-weight: 600; font-size: 1.05rem; color: #2d3748; }
+    .mode-btn .desc { font-size: 0.85rem; color: #718096; }
+    .question-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 32px 20px; border-radius: 20px; text-align: center; margin: 20px 0; }
+    #question { font-size: 2rem; font-weight: 700; line-height: 1.3; }
+    .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .answer-btn { padding: 18px; font-size: 1.3rem; font-weight: 600; border: 2px solid #e2e8f0; border-radius: 14px; background: #f7fafc; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+    .answer-btn:hover:not(:disabled) { border-color: #667eea; background: #edf2ff; }
+    .answer-btn.correct { background: #c6f6d5; border-color: #38a169; color: #22543d; }
+    .answer-btn.wrong { background: #fed7d7; border-color: #e53e3e; color: #742a2a; }
+    .answer-btn:disabled { cursor: default; }
+    .feedback { text-align: center; font-size: 1.1rem; font-weight: 600; min-height: 28px; }
+    .feedback.good { color: #38a169; }
+    .feedback.bad { color: #e53e3e; }
+    .primary-btn { padding: 16px; font-size: 1.1rem; font-weight: 600; border: none; border-radius: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; cursor: pointer; font-family: inherit; margin-bottom: 12px; }
+    .primary-btn:hover { opacity: 0.9; }
+    .link-btn { background: none; border: none; color: #667eea; cursor: pointer; font-size: 0.9rem; padding: 8px; font-family: inherit; text-decoration: underline; }
+    #result { text-align: center; justify-content: center; }
+    #result-text { margin: 16px 0 24px; font-size: 1.1rem; color: #4a5568; }
+    @media (max-width: 400px) { .app { padding: 20px; } #question { font-size: 1.5rem; } .answer-btn { font-size: 1.1rem; padding: 14px; } }
+  </style>
 </head>
 <body>
   <div class="app">
@@ -16,7 +49,6 @@
       </div>
     </header>
 
-    <!-- Экран выбора режима -->
     <section id="menu" class="screen active">
       <h2>Выбери режим</h2>
       <div class="modes">
@@ -39,7 +71,6 @@
       <button id="reset-btn" class="link-btn">Сбросить прогресс</button>
     </section>
 
-    <!-- Экран игры -->
     <section id="game" class="screen">
       <button id="back-btn" class="link-btn">← Назад</button>
       <div class="question-box">
@@ -49,7 +80,6 @@
       <div id="feedback" class="feedback"></div>
     </section>
 
-    <!-- Экран результата -->
     <section id="result" class="screen">
       <h2 id="result-title">Молодец!</h2>
       <p id="result-text"></p>
@@ -58,6 +88,175 @@
     </section>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const state = { score: 0, streak: 0, mode: null, questionNum: 0, totalQuestions: 10, correctInRound: 0, currentAnswer: null };
+    const QUESTIONS_PER_ROUND = 10;
+
+    function loadProgress() {
+      const saved = localStorage.getItem('math3-progress');
+      if (saved) {
+        const data = JSON.parse(saved);
+        state.score = data.score || 0;
+        state.streak = data.streak || 0;
+      }
+      updateStats();
+    }
+
+    function saveProgress() {
+      localStorage.setItem('math3-progress', JSON.stringify({ score: state.score, streak: state.streak }));
+    }
+
+    function updateStats() {
+      document.getElementById('score').textContent = state.score;
+      document.getElementById('streak').textContent = state.streak;
+    }
+
+    function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+
+    function makeOptions(correct) {
+      const opts = new Set([correct]);
+      while (opts.size < 4) {
+        let delta = rand(1, 10);
+        const candidate = Math.random() > 0.5 ? correct + delta : correct - delta;
+        if (candidate > 0) opts.add(candidate);
+      }
+      return shuffle([...opts]);
+    }
+
+    function generateMultiply() {
+      const a = rand(2, 9);
+      const b = rand(2, 9);
+      if (Math.random() < 0.4) {
+        return { text: `${a * b} ÷ ${a} = ?`, answer: b };
+      }
+      return { text: `${a} × ${b} = ?`, answer: a * b };
+    }
+
+    function generateHundreds() {
+      const isAdd = Math.random() > 0.5;
+      if (isAdd) {
+        const a = rand(100, 800);
+        const b = rand(50, 199);
+        return { text: `${a} + ${b} = ?`, answer: a + b };
+      } else {
+        const a = rand(200, 999);
+        const b = rand(50, a - 50);
+        return { text: `${a} − ${b} = ?`, answer: a - b };
+      }
+    }
+
+    const logicTasks = [
+      { text: 'У Пети 5 яблок, у Васи в 3 раза больше. Сколько у Васи?', answer: 15 },
+      { text: 'В корзине 24 гриба, треть — белые. Сколько белых?', answer: 8 },
+      { text: 'Книга стоит 120 ₽. Сколько стоят 3 книги?', answer: 360 },
+      { text: 'Лента 96 см, отрезали четверть. Сколько осталось?', answer: 72 },
+      { text: 'В 4 коробках по 8 карандашей. Сколько всего?', answer: 32 },
+      { text: 'Было 50 конфет, съели 2/5. Сколько осталось?', answer: 30 },
+      { text: 'Периметр квадрата 36 см. Чему равна сторона?', answer: 9 },
+      { text: 'У Маши 18 наклеек, это в 2 раза больше, чем у Оли. Сколько у Оли?', answer: 9 },
+      { text: 'Сколько минут в двух с половиной часах?', answer: 150 },
+      { text: 'Один альбом 45 ₽. Сколько сдачи с 200 ₽ за 3 альбома?', answer: 65 },
+      { text: 'За 5 тетрадей заплатили 100 ₽. Сколько стоит одна?', answer: 20 },
+      { text: 'В классе 28 учеников, 3/4 — девочки. Сколько мальчиков?', answer: 7 }
+    ];
+
+    function generateLogic() {
+      const task = logicTasks[rand(0, logicTasks.length - 1)];
+      return { text: task.text, answer: task.answer, options: makeOptions(task.answer) };
+    }
+
+    function startGame(mode) {
+      state.mode = mode;
+      state.questionNum = 0;
+      state.correctInRound = 0;
+      showScreen('game');
+      nextQuestion();
+    }
+
+    function nextQuestion() {
+      if (state.questionNum >= QUESTIONS_PER_ROUND) { endGame(); return; }
+      state.questionNum++;
+      let q;
+      if (state.mode === 'multiply') q = generateMultiply();
+      else if (state.mode === 'hundreds') q = generateHundreds();
+      else q = generateLogic();
+
+      state.currentAnswer = q.answer;
+      document.getElementById('question').textContent = q.text;
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('feedback').className = 'feedback';
+
+      const options = q.options || makeOptions(q.answer);
+      const answersDiv = document.getElementById('answers');
+      answersDiv.innerHTML = '';
+      options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => checkAnswer(btn, opt));
+        answersDiv.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(btn, chosen) {
+      document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
+      const feedback = document.getElementById('feedback');
+      if (chosen === state.currentAnswer) {
+        btn.classList.add('correct');
+        state.score += 10;
+        state.streak += 1;
+        state.correctInRound++;
+        feedback.textContent = state.streak >= 3 ? `🔥 Отлично! Серия ${state.streak}!` : '✅ Правильно!';
+        feedback.className = 'feedback good';
+      } else {
+        btn.classList.add('wrong');
+        state.streak = 0;
+        feedback.textContent = `❌ Неверно. Правильный ответ: ${state.currentAnswer}`;
+        feedback.className = 'feedback bad';
+        document.querySelectorAll('.answer-btn').forEach(b => {
+          if (Number(b.textContent) === state.currentAnswer) b.classList.add('correct');
+        });
+      }
+      updateStats();
+      saveProgress();
+      setTimeout(nextQuestion, 1200);
+    }
+
+    function endGame() {
+      const correct = state.correctInRound;
+      let title, text;
+      if (correct >= 9) { title = '🏆 Великолепно!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}!`; }
+      else if (correct >= 7) { title = '🎉 Отлично!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}.`; }
+      else if (correct >= 5) { title = '👍 Хорошо!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}.`; }
+      else { title = '💪 Не сдавайся!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}. Попробуй ещё!`; }
+      document.getElementById('result-title').textContent = title;
+      document.getElementById('result-text').textContent = text;
+      showScreen('result');
+    }
+
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(name).classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadProgress();
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => startGame(btn.dataset.mode));
+      });
+      document.getElementById('back-btn').addEventListener('click', () => showScreen('menu'));
+      document.getElementById('again-btn').addEventListener('click', () => startGame(state.mode));
+      document.getElementById('menu-btn').addEventListener('click', () => showScreen('menu'));
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        if (confirm('Сбросить весь прогресс?')) {
+          localStorage.removeItem('math3-progress');
+          state.score = 0;
+          state.streak = 0;
+          updateStats();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
