@@ -1,0 +1,3193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pilo Premium App</title>
+
+<meta name="theme-color" content="#F4F5F7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,600;0,800;0,900;1,900&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<style>
+:root { 
+    --bg-app: #F4F5F7; 
+    --bg-card: #FFFFFF;
+    --text-main: #111111;
+    --text-muted: #8A8A8E;
+    --primary: #D4FF00; 
+    --primary-dark: #C2EB00;
+    --primary-glow: rgba(212, 255, 0, 0.4);
+    --dark-pill: #1C1C1E;
+    --success: #30D158;
+    --danger: #FF453A;
+    --warn: #FF9F0A;
+    --radius-card: 24px;
+    --radius-pill: 100px;
+    --radius-input: 16px;
+    --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.04);
+    --shadow-primary: 0 8px 24px rgba(212, 255, 0, 0.3);
+    --bg-pin-zone: #F0F2F5;
+    --shadow-btn-out: 6px 6px 12px #d1d5db, -6px -6px 12px #ffffff;
+    --shadow-btn-in: inset 6px 6px 12px #d1d5db, inset -6px -6px 12px #ffffff;
+}
+
+* { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: var(--bg-app); color: var(--text-main); margin: 0; padding: 16px; padding-bottom: 100px; font-size: 15px; }
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
+.header h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.header button { background: none; border: none; color: var(--danger); font-weight: 800; font-size: 13px; text-transform: uppercase; white-space: nowrap; padding: 0; }
+
+.card { background: var(--bg-card); border-radius: var(--radius-card); padding: 20px; box-shadow: var(--shadow-card); margin-bottom: 16px; border: 1px solid rgba(0,0,0,0.02); }
+
+.main-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; scrollbar-width: none; }
+.main-tabs::-webkit-scrollbar { display: none; }
+.main-tab { 
+    flex: 1; text-align: center; padding: 12px 8px; font-weight: 700; font-size: 13px; border-radius: var(--radius-pill); cursor: pointer; 
+    color: #555555; background: var(--bg-card); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); border: 1px solid rgba(0,0,0,0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 6px; 
+}
+.main-tab:active { transform: scale(0.96); }
+.main-tab .tab-icon { width: 18px; height: 18px; fill: currentColor; opacity: 0.5; transition: 0.3s; }
+
+.main-tab.active { font-weight: 800; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); border-color: transparent; transform: translateY(-2px); }
+.main-tab.active .tab-icon { opacity: 1; }
+
+#tab-btn-orders.active { background: #FEFFFC; color: var(--text-main); border: 1px solid #E5E5EA; }
+#tab-btn-catalog.active { background: #D0FF00; color: var(--text-main); box-shadow: 0 8px 24px rgba(208, 255, 0, 0.4); }
+#tab-btn-scanner.active { background: #8116E0; color: #FFFFFF; box-shadow: 0 8px 24px rgba(129, 22, 224, 0.4); }
+
+#dir-tab-btn-orders.active { background: #FEFFFC; color: var(--text-main); border: 1px solid #E5E5EA; }
+#dir-tab-btn-catalog.active { background: #D0FF00; color: var(--text-main); box-shadow: 0 8px 24px rgba(208, 255, 0, 0.4); }
+#dir-tab-btn-scanner.active { background: #8116E0; color: #FFFFFF; box-shadow: 0 8px 24px rgba(129, 22, 224, 0.4); }
+
+.size-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.size-pill { padding: 12px 22px; border: none; border-radius: var(--radius-pill); font-size: 15px; font-weight: 700; color: var(--text-main); background: var(--bg-app); cursor: pointer; transition: 0.2s; text-align: center;}
+.size-pill:active { transform: scale(0.95); }
+.size-pill.active { background: var(--primary); color: var(--text-main); box-shadow: var(--shadow-primary); }
+
+.toast { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--dark-pill); color: #FFF; padding: 16px 24px; border-radius: var(--radius-input); font-size: 15px; font-weight: 600; z-index: 10000; opacity: 0; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; text-align: center; width: 90%; max-width: 380px; box-shadow: 0 12px 32px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.error { background: var(--danger); }
+.toast.success { background: var(--primary); color: var(--text-main); font-weight: 900; }
+.toast.warn { background: var(--warn); }
+
+.input-group { display: flex; flex-direction: column; margin-bottom: 12px; position: relative; }
+.input-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 800; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.5px;}
+.input-field { padding: 16px; border: 2px solid transparent; border-radius: var(--radius-input); font-size: 15px; font-weight: 600; color: var(--text-main); outline: none; width: 100%; background: var(--bg-app); transition: 0.2s; }
+.input-field:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 4px rgba(212, 255, 0, 0.15); }
+select.input-field { appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23111111%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px top 50%; background-size: 12px auto; }
+
+/* Стилизация кнопки загрузки фото */
+input[type="file"]::file-selector-button {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid #E5E5EA;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    font-weight: 800;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    margin-right: 12px;
+    transition: 0.2s;
+}
+input[type="file"]::file-selector-button:active {
+    background: #E5E5EA;
+}
+
+.btn-main { background: var(--primary); color: var(--text-main); border: none; padding: 18px; border-radius: var(--radius-pill); font-size: 15px; font-weight: 900; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-primary); text-transform: uppercase; letter-spacing: 0.5px;}
+.btn-main:active { transform: scale(0.97); box-shadow: none; }
+.btn-main:disabled { background: #E5E5EA; color: #8A8A8E; box-shadow: none; cursor: not-allowed; transform: none; }
+
+.btn-action { background: var(--primary); color: var(--text-main); border: none; padding: 16px; border-radius: var(--radius-pill); font-size: 15px; font-weight: 900; width: 100%; cursor: pointer; transition: 0.2s; box-shadow: var(--shadow-primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-action:active { transform: scale(0.97); box-shadow: none; }
+.btn-outline { background: transparent; color: var(--danger); border: 1.5px solid rgba(255, 69, 58, 0.2); padding: 14px; border-radius: var(--radius-pill); font-size: 15px; font-weight: 800; width: 100%; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-outline:active { background: rgba(255, 69, 58, 0.05); }
+
+.btn-del { background: rgba(255, 69, 58, 0.1); color: var(--danger); border: none; padding: 12px 16px; border-radius: var(--radius-pill); font-size: 14px; cursor: pointer; font-weight: 800; }
+.btn-edit { background: var(--bg-app); color: var(--text-main); border: none; padding: 12px 16px; border-radius: var(--radius-pill); font-size: 14px; cursor: pointer; font-weight: 800; }
+
+.qty-control { display: flex; align-items: center; gap: 8px; background: var(--bg-card); border-radius: var(--radius-pill); padding: 4px; border: 1px solid var(--bg-app); width: 140px;}
+.qty-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: var(--bg-app); font-weight: 800; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-main);}
+.qty-input { width: 100%; text-align: center; border: none; background: transparent; font-weight: 800; font-size: 16px; outline: none; }
+
+.screen { display: none; animation: fadeIn 0.3s ease; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.retail-flow-logo { text-align: center; font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 24px; display: flex; justify-content: center; align-items: center; gap: 6px; line-height: 1; }
+.retail-flow-logo .retail { color: #111111; }
+.retail-flow-logo .flow { color: #D4FF00; font-style: italic; text-shadow: 0 0 15px rgba(212, 255, 0, 0.6); }
+
+.pin-zone { background: radial-gradient(circle at center, #FFFFFF 0%, var(--bg-app) 100%); border-radius: var(--radius-card); padding: 32px 20px; margin-top: 24px; }
+.pin-title { text-align: center; font-size: 15px; font-weight: 800; color: var(--text-muted); margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase;}
+.pin-display { display: flex; justify-content: center; gap: 12px; height: 24px; margin-bottom: 32px; padding: 12px 24px; border-radius: var(--radius-pill); box-shadow: var(--shadow-btn-in); background: var(--bg-pin-zone); width: max-content; margin-left: auto; margin-right: auto; }
+.pin-dash { width: 18px; height: 4px; border-radius: 4px; background: #C4C7CC; transition: all 0.3s ease; }
+.pin-dash.active { background: var(--text-main); box-shadow: 0 0 6px rgba(17, 17, 17, 0.4); }
+.pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; justify-items: center; }
+.pin-btn { width: 74px; height: 74px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 500; background: var(--bg-pin-zone); border-radius: 50%; border: none; cursor: pointer; color: var(--text-main); box-shadow: var(--shadow-btn-out); transition: all 0.1s ease; }
+.pin-btn:active { box-shadow: var(--shadow-btn-in); transform: scale(0.95); font-size: 26px; }
+.pin-btn.clear { color: var(--text-muted); box-shadow: none; background: transparent; font-size: 14px; font-weight: 800; }
+.pin-btn.ok { background: var(--dark-pill); color: var(--primary); font-size: 20px; font-weight: 800; box-shadow: 6px 6px 12px #d1d5db, -6px -6px 12px #ffffff, 0 0 20px var(--primary-glow); border: 1px solid rgba(212, 255, 0, 0.2); }
+.pin-btn.ok:active { box-shadow: inset 4px 4px 10px #000, inset -4px -4px 10px #333, 0 0 25px var(--primary-glow); }
+
+.order-card { background: var(--bg-card); border-radius: var(--radius-card); padding: 16px; margin-bottom: 12px; display:flex; flex-direction: column; gap:8px; position: relative; box-shadow: var(--shadow-card); }
+.order-card.pending { border-left: 5px solid var(--primary); }
+.order-card.accepted { border-left: 5px solid var(--success); }
+.order-card.rejected { border-left: 5px solid var(--danger); opacity: 0.7; }
+.order-header { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;}
+.order-title { font-weight: 900; font-size: 16px; margin-bottom: 4px; color: var(--text-main); }
+.order-details { font-size: 14px; color: var(--text-main); margin-bottom: 4px; font-weight: 500;}
+.order-photo { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-input); margin-bottom: 8px; background: var(--bg-app); }
+
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 10000; display: none; justify-content: center; align-items: flex-end; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal-content { background: var(--bg-card); width: 100%; max-width: 500px; border-radius: var(--radius-card) var(--radius-card) 0 0; padding: 24px; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.skeleton-card { background: var(--bg-card); border-radius: var(--radius-card); padding: 16px; margin-bottom: 12px; height: 150px; animation: pulse 1.5s infinite ease-in-out; }
+.skeleton-line { background: #E5E5EA; height: 16px; border-radius: 8px; margin-bottom: 8px; }
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+#js-error-banner { position: fixed; top: 0; left: 0; right: 0; background: #FF453A; color: #FFF; padding: 14px 16px; font-size: 13px; font-weight: 600; z-index: 99999; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.3); white-space: pre-wrap; word-break: break-word; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@keyframes slideDownIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+
+.offline-bar { background: var(--danger); color: #fff; padding: 10px 16px; border-radius: var(--radius-input); font-size: 13px; font-weight: 700; text-align: center; margin-bottom: 12px; display: none; box-shadow: 0 4px 12px rgba(255, 69, 58, 0.3); }
+
+.rev-card { background: var(--bg-app); padding: 14px; border-radius: 12px; margin-bottom: 8px; }
+.rev-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; cursor: pointer; }
+.rev-title { font-weight: 800; font-size: 14px; }
+.rev-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-weight: 600; }
+.rev-details { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #D1D5DB; display: none; }
+.rev-details.open { display: block; }
+.rev-item { font-size: 12px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.04); display: flex; justify-content: space-between; gap: 8px; }
+.rev-item:last-child { border-bottom: none; }
+.rev-item-error { background: rgba(255, 69, 58, 0.08); border-radius: 6px; padding-left: 6px; padding-right: 6px; }
+.rev-item-warn  { background: rgba(255, 159, 10, 0.08); border-radius: 6px; padding-left: 6px; padding-right: 6px; }
+
+#camera-scanner-modal { align-items: center; z-index: 10002; }
+#camera-scanner-modal .modal-content { border-radius: var(--radius-card); max-width: 500px; width: 94%; padding: 20px; }
+#qr-reader { width: 100%; border-radius: var(--radius-input); overflow: hidden; background: #000; margin-bottom: 12px; min-height: 240px; position: relative; }
+#qr-reader video { border-radius: var(--radius-input); object-fit: cover; }
+#qr-reader__scan_region { border-radius: var(--radius-input); }
+#qr-reader__dashboard_section_csr button { background: var(--primary) !important; color: var(--text-main) !important; border: none !important; border-radius: var(--radius-pill) !important; font-weight: 800 !important; padding: 10px 16px !important; margin-top: 8px !important; }
+#qr-reader__dashboard_section_csr { padding: 8px 0 !important; }
+#qr-reader__dashboard_section_csr span { color: #FFF !important; font-size: 12px !important; }
+#qr-reader__header_message { color: var(--text-main) !important; background: var(--bg-app) !important; padding: 8px !important; border-radius: 8px !important; font-weight: 700 !important; }
+.scan-result-badge { display: inline-block; background: var(--success); color: #fff; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 13px; font-weight: 800; margin-top: 8px; }
+
+.icon { width: 20px; height: 20px; fill: currentColor; vertical-align: middle; }
+
+/* Стили для пустых состояний */
+.empty-state { text-align: center; padding: 30px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.empty-state svg { margin-bottom: 12px; }
+.empty-state-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
+.empty-state-text { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+
+#scan-preview-container > div:last-child { animation: slideDownIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+
+<div id="js-error-banner"></div>
+
+<div id="custom-confirm-modal" class="modal-overlay" style="align-items: center; z-index: 10001;">
+    <div class="modal-content" style="border-radius: var(--radius-card); max-width: 320px; width: 90%; padding: 24px; text-align: center; animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <h3 id="custom-confirm-title" style="margin: 0 0 8px 0; font-weight: 900; font-size: 18px; color: var(--text-main);">Подтвердите действие</h3>
+        <p id="custom-confirm-text" style="margin: 0 0 24px 0; font-size: 14px; color: var(--text-muted); font-weight: 500; line-height: 1.4;"></p>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-edit" id="custom-confirm-cancel" style="flex: 1; padding: 14px; font-size: 14px;">Отмена</button>
+            <button class="btn-main" id="custom-confirm-ok" style="flex: 1; padding: 14px; font-size: 14px; margin: 0; text-transform: none; letter-spacing: 0;">Да</button>
+        </div>
+    </div>
+</div>
+
+<div id="camera-scanner-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-weight:900; font-size: 20px; margin-bottom: 12px;">📷 Сканирование камерой</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin: 0 0 12px 0; font-weight: 500;">Наведите камеру на штрих-код.</p>
+        <div id="qr-reader"></div>
+        <button id="btn-switch-camera" onclick="switchCamera()" style="display: none; width: 100%; margin-bottom: 12px; padding: 10px; border-radius: var(--radius-pill); background: rgba(0,0,0,0.5); color: #fff; border: none; font-weight: 700; font-size: 13px;">
+            <svg class="icon" viewBox="0 0 24 24" style="width:16px; height:16px; margin-right:6px;"><path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-8 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg> Сменить камеру
+        </button>
+        <div id="scan-last-result" style="text-align:center; margin-bottom: 12px;"></div>
+        <button class="btn-edit" style="width:100%; padding: 16px; font-size: 15px;" onclick="closeCameraScanner()">Закрыть</button>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="edit-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-top:0; font-weight:900; font-size: 20px; margin-bottom: 16px;">Редактировать</h3>
+        <input type="hidden" id="edit-item-id">
+        <input type="hidden" id="edit-item-type">
+        <div class="input-group"><label class="input-label">Размер</label><input type="text" id="edit-size" class="input-field"></div>
+        <div class="input-group"><label class="input-label">Год</label><input type="number" id="edit-year" class="input-field"></div>
+        <div class="input-group"><label class="input-label">Количество</label><input type="number" id="edit-qty" class="input-field"></div>
+        <div style="display:flex; gap:12px; margin-top: 12px;">
+            <button class="btn-edit" style="flex:1;" onclick="closeEditModal()">Отмена</button>
+            <button class="btn-main" style="flex:2;" onclick="saveEditItem()">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<div id="screen-auth" class="screen active">
+    <div class="card">
+        <div class="retail-flow-logo">
+            <span class="retail">RETAIL</span>
+            <span class="flow">FLOW</span>
+        </div>
+        <div class="size-pills" style="justify-content: space-between; margin-bottom: 16px;" id="shop-pills">
+            <div class="size-pill" style="flex:1;" onclick="selectShop(this, 'Алик')">Алик</div>
+            <div class="size-pill" style="flex:1;" onclick="selectShop(this, 'Мода')">Мода</div>
+            <div class="size-pill" style="flex:1;" onclick="selectShop(this, 'Твой стиль')">Стиль</div>
+        </div>
+        <div class="input-group"><input type="text" class="input-field" id="seller-name" placeholder="Введите имя" autocomplete="off"></div>
+        <button class="btn-main" onclick="loginSeller()">Войти</button>
+    </div>
+    <div class="pin-zone">
+        <div class="pin-title">by A.A</div>
+        <div class="pin-display" id="pin-display"><div class="pin-dash"></div><div class="pin-dash"></div><div class="pin-dash"></div><div class="pin-dash"></div></div>
+        <div class="pin-pad">
+            <div class="pin-btn" onclick="pressPin('1')">1</div><div class="pin-btn" onclick="pressPin('2')">2</div><div class="pin-btn" onclick="pressPin('3')">3</div>
+            <div class="pin-btn" onclick="pressPin('4')">4</div><div class="pin-btn" onclick="pressPin('5')">5</div><div class="pin-btn" onclick="pressPin('6')">6</div>
+            <div class="pin-btn" onclick="pressPin('7')">7</div><div class="pin-btn" onclick="pressPin('8')">8</div><div class="pin-btn" onclick="pressPin('9')">9</div>
+            <div class="pin-btn clear" onclick="pressPin('C')">СБРОС</div><div class="pin-btn" onclick="pressPin('0')">0</div><div class="pin-btn ok" onclick="checkPin()">OK</div>
+        </div>
+    </div>
+</div>
+
+<div id="screen-seller" class="screen">
+    <div class="header">
+        <h1 id="shop-title">Магазин</h1>
+        <button onclick="logout()">Выйти</button>
+    </div>
+
+    <div class="main-tabs">
+        <div class="main-tab active" id="tab-btn-orders" onclick="switchMainTab('orders')">
+            <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+            </svg>
+            Заказы
+        </div>
+        <div class="main-tab" id="tab-btn-catalog" onclick="switchMainTab('catalog')">
+            <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+            </svg>
+            Витрина
+        </div>
+        <div class="main-tab" id="tab-btn-scanner" onclick="switchMainTab('scanner')">
+            <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 3H3v2h18V3zm0 8H3v2h18v-2zm0 8H3v2h18v-2z"/>
+            </svg>
+            Ревизия
+        </div>
+    </div>
+
+    <div id="section-orders">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                <h3 style="margin:0; font-weight:900; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                    <svg style="width: 24px; height: 24px; fill: var(--primary);" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    Создать запрос
+                </h3>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Кому (Магазин)</label>
+                <select id="order-to-shop" class="input-field">
+                    <option value="Алик">Алик</option>
+                    <option value="Мода">Мода</option>
+                    <option value="Твой стиль">Твой стиль</option>
+                </select>
+            </div>
+            
+            <div class="input-label">Отдел</div>
+            <div class="size-pills" style="margin-bottom:12px;" id="order-dept-pills">
+                <div class="size-pill" onclick="selectDept(this, 'Муж')">Муж</div>
+                <div class="size-pill" onclick="selectDept(this, 'Жен')">Жен</div>
+                <div class="size-pill" onclick="selectDept(this, 'Дет')">Дет</div>
+                <div class="size-pill" onclick="selectDept(this, 'Обувь')">Обувь</div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Категория</label>
+                <select id="order-category" class="input-field">
+                    <option value="">Выберите...</option>
+                    <option value="Куртки">Куртки</option>
+                    <option value="Ветровки">Ветровки</option>
+                    <option value="Шубы">Шубы</option>
+                    <option value="Спорт-костюмы">Спорт-костюмы</option>
+                    <option value="Кофты">Кофты</option>
+                    <option value="Толстовки">Толстовки</option>
+                    <option value="Обувь">Обувь</option>
+                    <option value="custom_add">➕ Своя категория...</option>
+                </select>
+                <input type="text" class="input-field" id="new-category-input" placeholder="Введите свою категорию" style="display:none; margin-top:8px;">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Фото</label>
+                <input type="file" accept="image/*" capture="environment" class="input-field" id="order-photo-file" onchange="handlePhoto(this, 'order-photo-preview', (val)=>window.currentOrderPhotoBase64=val)" style="padding: 12px;">
+                <img id="order-photo-preview" style="width:100%; max-height:200px; object-fit:contain; border-radius:var(--radius-input); background:var(--bg-app); margin-top:8px; display:none; padding: 8px;">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Размер</label>
+                <select id="order-size" class="input-field">
+                    <option value="">Выберите...</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="2XL">2XL</option>
+                    <option value="3XL">3XL</option>
+                    <option value="custom_add">➕ Свой размер...</option>
+                </select>
+                <input type="text" class="input-field" id="custom-size-input" placeholder="Введите свой размер" style="display:none; margin-top:8px;">
+            </div>
+
+            <div class="input-group"><input type="text" id="order-comment" class="input-field" placeholder="Комментарий"></div>
+            
+            <div style="display:flex; gap:12px; margin-top:8px;">
+                <button class="btn-edit" id="btn-reset-order" style="flex:1; padding:18px; text-transform:uppercase; letter-spacing:0.5px; font-weight:900; font-size:14px;" onclick="resetOrderForm()">Сбросить</button>
+                <button class="btn-main" id="btn-submit-order" style="flex:2; margin:0;" onclick="createOrder()">Отправить запрос</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px;">Входящие</h3>
+            <div id="orders-incoming-list"><div class="skeleton-card"><div class="skeleton-line" style="width: 80%;"></div><div class="skeleton-line" style="width: 60%;"></div></div></div>
+        </div>
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px;">Исходящие</h3>
+            <div id="orders-outgoing-list"><div class="skeleton-card"><div class="skeleton-line" style="width: 80%;"></div><div class="skeleton-line" style="width: 60%;"></div></div></div>
+        </div>
+    </div>
+
+    <div id="section-catalog" style="display: none;">
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px; margin-bottom: 16px;">Подбор товара</h3>
+
+            <div class="input-label">Отдел</div>
+            <div class="size-pills" style="margin-bottom:12px;" id="cat-dept-pills">
+                <div class="size-pill" onclick="selectCatDept(this, 'Муж')">Муж</div>
+                <div class="size-pill" onclick="selectCatDept(this, 'Жен')">Жен</div>
+                <div class="size-pill" onclick="selectCatDept(this, 'Дет')">Дет</div>
+                <div class="size-pill" onclick="selectCatDept(this, 'Обувь')">Обувь</div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Категория</label>
+                <select id="cat-category" class="input-field">
+                    <option value="">Выберите...</option>
+                    <option value="Куртки">Куртки</option>
+                    <option value="Ветровки">Ветровки</option>
+                    <option value="Шубы">Шубы</option>
+                    <option value="Спорт-костюмы">Спорт-костюмы</option>
+                    <option value="Кофты">Кофты</option>
+                    <option value="Толстовки">Толстовки</option>
+                    <option value="Обувь">Обувь</option>
+                    <option value="custom_add">➕ Своя категория...</option>
+                </select>
+                <input type="text" class="input-field" id="new-cat-category-input" placeholder="Введите свою категорию" style="display:none; margin-top:8px;">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Фото</label>
+                <input type="file" accept="image/*" capture="environment" class="input-field" id="cat-photo-file" onchange="handlePhoto(this, 'cat-photo-preview', (val)=>window.currentCatPhotoBase64=val)" style="padding: 12px;">
+                <img id="cat-photo-preview" style="width:100%; max-height:200px; object-fit:contain; border-radius:var(--radius-input); background:var(--bg-app); margin-top:8px; display:none; padding: 8px;">
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Размер</label>
+                <select id="cat-size" class="input-field">
+                    <option value="">Выберите...</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="2XL">2XL</option>
+                    <option value="3XL">3XL</option>
+                    <option value="custom_add">➕ Свой размер...</option>
+                </select>
+                <input type="text" class="input-field" id="custom-cat-size-input" placeholder="Введите свой размер" style="display:none; margin-top:8px;">
+            </div>
+
+            <div style="display: flex; gap: 12px; align-items: flex-end; margin-bottom: 16px;">
+                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                    <label class="input-label">Год</label>
+                    <select id="cat-year" class="input-field"></select>
+                </div>
+                <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                    <label class="input-label">Кол-во</label>
+                    <div class="qty-control" style="width: 100%;">
+                        <button class="qty-btn" onclick="changeCatQty(-1)">-</button>
+                        <input type="number" id="cat-qty" class="qty-input" value="1" min="1" readonly>
+                        <button class="qty-btn" onclick="changeCatQty(1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button class="btn-edit" id="btn-reset-catalog" style="flex:1; padding:18px; text-transform:uppercase; letter-spacing:0.5px; font-weight:900; font-size:14px;" onclick="resetCatalogForm()">Сбросить</button>
+                <button class="btn-main" id="btn-submit-catalog" style="flex:2; margin:0;" onclick="addToCatalog()">Опубликовать</button>
+            </div>
+        </div>
+
+        <div class="card" style="background: transparent; box-shadow: none; padding: 0; border: none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+                <h3 style="margin:0; font-weight:900; font-size: 20px;">Витрина</h3>
+            </div>
+
+            <div class="size-pills" style="margin:0 0 8px 0; background: var(--bg-card); padding:4px; border-radius:var(--radius-pill); flex-wrap:wrap;">
+                <div class="size-pill active" id="btn-filter-all" onclick="toggleCatalogFilter('all')" style="padding:6px 12px; font-size: 12px;">Все</div>
+                <div class="size-pill" id="btn-filter-mine" onclick="toggleCatalogFilter('mine')" style="padding:6px 12px; font-size: 12px;">Мои</div>
+                <div class="size-pill" id="btn-filter-alik" onclick="toggleCatalogFilter('Алик')" style="padding:6px 12px; font-size: 12px;">Алик</div>
+                <div class="size-pill" id="btn-filter-moda" onclick="toggleCatalogFilter('Мода')" style="padding:6px 12px; font-size: 12px;">Мода</div>
+                <div class="size-pill" id="btn-filter-style" onclick="toggleCatalogFilter('Твой стиль')" style="padding:6px 12px; font-size: 12px;">Стиль</div>
+            </div>
+
+            <div id="catalog-category-pills" class="size-pills" style="margin:0 0 12px 0; flex-wrap:wrap; display:none;"></div>
+
+            <div id="catalog-list"><div class="skeleton-card"><div class="skeleton-line" style="width: 100%; height: 100px;"></div></div></div>
+        </div>
+    </div>
+
+    <div id="section-scanner" style="display: none;">
+        <div id="offline-bar" class="offline-bar">📶 Нет интернета. Работаем офлайн.</div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px; margin-bottom: 16px;">Ревизия</h3>
+
+            <div class="input-group" style="margin-bottom: 0;">
+                <label class="input-label">Категория ревизии</label>
+                <input type="text" id="revision-category-input" class="input-field"
+                       placeholder="Например: Куртка женская" autocomplete="off">
+            </div>
+
+            <div id="scan-preview-container" style="margin-top: 16px;"></div>
+            <div id="scan-list-container" style="margin-top: 16px;"></div>
+
+            <div id="scan-summary" style="display:none; margin-top: 16px; padding-top: 16px; border-top: 2px dashed #D1D5DB; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="color: var(--text-muted); font-weight: 600; font-size: 13px;">Позиций:</span>
+                <strong id="total-positions" class="tabular-nums" style="color: var(--text-main); font-size: 16px;">0</strong>
+                <span style="color: var(--text-muted); font-weight: 600; font-size: 13px; margin-left: 12px;">Штук:</span>
+                <strong id="total-qty" class="tabular-nums" style="color: var(--success); font-size: 16px;">0</strong>
+                <span style="color: var(--text-muted); font-weight: 600; font-size: 13px; margin-left: 12px;">Ошибки:</span>
+                <strong id="total-errors" class="tabular-nums" style="color: var(--text-main); font-size: 16px;">0</strong>
+            </div>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn-action" onclick="saveInventory()">
+                <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+                Сохранить ревизию
+            </button>
+            <button class="btn-outline" onclick="clearDraft()">
+                🗑 Очистить черновик
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px;">Сохранённые ревизии</h3>
+            <div id="seller-revisions-list">Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<div id="screen-director" class="screen">
+    <div class="header">
+        <h1>А.А. · Панель</h1>
+        <button onclick="logout()">Выйти</button>
+    </div>
+    
+    <div class="main-tabs">
+        <div class="main-tab active" id="dir-tab-btn-orders" onclick="switchDirTab('orders')">
+            <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+            </svg>
+            Заказы
+        </div>
+        <div class="main-tab" id="dir-tab-btn-catalog" onclick="switchDirTab('catalog')">
+            <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/>
+            </svg>
+            Витрина
+        </div>
+        <div class="main-tab" id="dir-tab-btn-scanner" onclick="switchDirTab('scanner')">
+            <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 3H3v2h18V3zm0 8H3v2h18v-2zm0 8H3v2h18v-2z"/>
+            </svg>
+            Ревизия
+        </div>
+    </div>
+    
+    <div class="card" id="dir-section-orders" style="padding: 16px;"><div id="director-orders-list"></div></div>
+    
+    <div class="card" id="dir-section-catalog" style="display:none; padding: 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:8px; flex-wrap:wrap;">
+            <h3 style="margin:0; font-weight:900; font-size: 18px;">Витрина</h3>
+        </div>
+
+        <div class="size-pills" style="margin:0 0 8px 0; background: var(--bg-app); padding:4px; border-radius:var(--radius-pill); flex-wrap:wrap;">
+            <div class="size-pill active" id="dir-filter-all" onclick="toggleDirectorCatalogFilter('all')" style="padding:6px 12px; font-size: 12px;">Все</div>
+            <div class="size-pill" id="dir-filter-alik" onclick="toggleDirectorCatalogFilter('Алик')" style="padding:6px 12px; font-size: 12px;">Алик</div>
+            <div class="size-pill" id="dir-filter-moda" onclick="toggleDirectorCatalogFilter('Мода')" style="padding:6px 12px; font-size: 12px;">Мода</div>
+            <div class="size-pill" id="dir-filter-style" onclick="toggleDirectorCatalogFilter('Твой стиль')" style="padding:6px 12px; font-size: 12px;">Стиль</div>
+        </div>
+
+        <div id="director-category-pills" class="size-pills" style="margin:0 0 12px 0; flex-wrap:wrap; display:none;"></div>
+
+        <div id="director-catalog-list"></div>
+    </div>
+    
+    <div id="dir-section-scanner" style="display:none;">
+        <div id="dir-offline-bar" class="offline-bar">📶 Нет интернета. Работаем офлайн.</div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px;">Сканер товаров (А.А.)</h3>
+            
+            <div class="input-label" style="margin-top: 12px;">Магазин</div>
+            <div class="size-pills" style="margin-bottom:16px;" id="director-scan-shop-pills">
+                <div class="size-pill active" onclick="selectDirectorScanShop(this, 'Алик')">Алик</div>
+                <div class="size-pill" onclick="selectDirectorScanShop(this, 'Мода')">Мода</div>
+                <div class="size-pill" onclick="selectDirectorScanShop(this, 'Твой стиль')">Твой стиль</div>
+            </div>
+
+            <button class="btn-action" onclick="openCameraScanner('director')" style="margin-bottom: 16px;">
+                <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;"><path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm-8 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                Сканировать камерой
+            </button>
+
+            <div id="director-scan-list-container"></div>
+
+            <div id="director-scan-summary" style="display:none; margin-top: 16px; padding-top: 16px; border-top: 2px dashed #D1D5DB; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="color: var(--text-muted); font-weight: 600; font-size: 13px;">Позиций:</span>
+                <strong id="director-total-positions" class="tabular-nums" style="color: var(--text-main); font-size: 16px;">0</strong>
+                <span style="color: var(--text-muted); font-weight: 600; font-size: 13px; margin-left: 12px;">Штук:</span>
+                <strong id="director-total-qty" class="tabular-nums" style="color: var(--success); font-size: 16px;">0</strong>
+            </div>
+
+            <button class="btn-outline" onclick="clearDirectorDraft()" style="margin-top: 20px;">
+                🗑 Очистить экран
+            </button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; font-weight:900; font-size: 18px;">История ревизий</h3>
+            <div class="size-pills" style="margin:0 0 12px 0; background: var(--bg-app); padding:4px; border-radius:var(--radius-pill); flex-wrap:wrap;">
+                <div class="size-pill active" id="dir-rev-filter-all" onclick="toggleDirectorRevisionFilter('all')" style="padding:6px 12px; font-size: 12px;">Все</div>
+                <div class="size-pill" id="dir-rev-filter-alik" onclick="toggleDirectorRevisionFilter('Алик')" style="padding:6px 12px; font-size: 12px;">Алик</div>
+                <div class="size-pill" id="dir-rev-filter-moda" onclick="toggleDirectorRevisionFilter('Мода')" style="padding:6px 12px; font-size: 12px;">Мода</div>
+                <div class="size-pill" id="dir-rev-filter-style" onclick="toggleDirectorRevisionFilter('Твой стиль')" style="padding:6px 12px; font-size: 12px;">Стиль</div>
+            </div>
+            <div id="director-revisions-list">Загрузка...</div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+  window.addEventListener('error', (e) => {
+    const banner = document.getElementById('js-error-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.textContent = '⚠️ Ошибка: ' + (e.message || 'unknown') + '\n' + (e.filename || '') + ':' + (e.lineno || '');
+    }
+  });
+
+  setTimeout(async () => {
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+        const { getFirestore, collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBXcymeTjA6zuCPM_ESuKEzVeyc-5YUqBU",
+          authDomain: "revisionset.firebaseapp.com",
+          projectId: "revisionset",
+          storageBucket: "revisionset.firebasestorage.app",
+          messagingSenderId: "904187992853",
+          appId: "1:904187992853:web:c009614e1cf718d950271c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.fbDB = db;
+        window.fbFns = { collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction };
+        console.log('✅ Firebase ready');
+
+        try {
+            if (typeof shop !== 'undefined' && shop && seller) {
+                if (typeof window.loadMyOrders === 'function') window.loadMyOrders();
+                if (typeof window.loadCatalog === 'function') window.loadCatalog(false, true);
+            }
+            if (typeof directorMode !== 'undefined' && directorMode) {
+                if (typeof window.loadDirectorOrders === 'function') window.loadDirectorOrders();
+                if (typeof window.loadRevisions === 'function') window.loadRevisions();
+            }
+        } catch(e) { console.error('Post-firebase load error:', e); }
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+            .then(reg => console.log('SW registered'))
+            .catch(err => console.log('SW error', err));
+        }
+      } catch (err) {
+        console.error('❌ Firebase init failed:', err);
+        window.fbDB = null;
+        window.fbFns = null;
+        try {
+            var inEl = document.getElementById('orders-incoming-list');
+            if (inEl) inEl.innerHTML = '<div style="color:var(--danger); text-align:center; padding:10px;">Нет связи с базой</div>';
+            var outEl = document.getElementById('orders-outgoing-list');
+            if (outEl) outEl.innerHTML = '<div style="color:var(--danger); text-align:center; padding:10px;">Нет связи с базой</div>';
+        } catch(_) {}
+      }
+  }, 100);
+</script>
+
+<script>
+var shop = '';
+var seller = '';
+try { shop = localStorage.getItem('ord_shop') || ''; } catch(e) {}
+try { seller = localStorage.getItem('ord_seller') || ''; } catch(e) {}
+
+var directorMode = false;
+var currentPin = '';
+
+window.currentOrderPhotoBase64 = '';
+window.currentCatPhotoBase64 = '';
+window.currentOrderCatalogId = null;
+
+var allIncomingOrders = [];
+var selectedOrderDept = '';
+
+var allCatalogItems = [];
+var selectedCatDept = '';
+var currentCatalogFilter = 'all';
+var currentDirectorCatalogFilter = 'all';
+var currentCatalogCategory = '';
+var currentDirectorCatalogCategory = '';
+
+var catalogCache = null;
+var catalogCacheTime = 0;
+var catalogLoading = false;
+var CATALOG_CACHE_TTL = 60 * 1000;
+
+var BARCODE_FILES = {
+  'Алик':       '1.json',
+  'Мода':       '3.json',
+  'Твой стиль': '2.json'
+};
+
+var barcodeDB = {};
+var barcodesLoadedFor = '';
+
+var directorScanShop = 'Алик';
+var directorBarcodeDB = {};
+var directorBarcodesLoadedFor = '';
+
+var audioCtx = null;
+
+function initAudio() {
+    if (!audioCtx) {
+        try {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        } catch(e) {}
+    }
+    try {
+        if (audioCtx && audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') {
+            audioCtx.resume();
+        }
+    } catch(_) {}
+}
+
+function playSuccessSound() {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+        if (audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') audioCtx.resume();
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 880;
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+    } catch(_) {}
+}
+
+function playWarnSound() {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+        if (audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') audioCtx.resume();
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = 440;
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+    } catch(_) {}
+}
+
+function playErrorSound() {
+    initAudio();
+    if (!audioCtx) return;
+    try {
+        if (audioCtx.state === 'suspended' && typeof audioCtx.resume === 'function') audioCtx.resume();
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'square';
+        osc.frequency.value = 220;
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+    } catch(_) {}
+}
+
+function draftKey() { return 'scan_list_draft_' + (shop || 'anon'); }
+function loadDraft() {
+    try { return JSON.parse(localStorage.getItem(draftKey()) || '[]'); } catch(e) { return []; }
+}
+function persistDraft() {
+    try { localStorage.setItem(draftKey(), JSON.stringify(scanList)); } catch(_) {}
+}
+
+var scanList = loadDraft();
+if (!Array.isArray(scanList)) scanList = [];
+
+var directorScanList = [];
+try {
+    var rawDir = localStorage.getItem('director_scan_list_draft');
+    var parsedDir = rawDir ? JSON.parse(rawDir) : [];
+    directorScanList = Array.isArray(parsedDir) ? parsedDir : [];
+} catch(e) {
+    try { localStorage.removeItem('director_scan_list_draft'); } catch(_) {}
+    directorScanList = [];
+}
+function persistDirectorDraft() {
+    try { localStorage.setItem('director_scan_list_draft', JSON.stringify(directorScanList)); } catch(_) {}
+}
+
+var pendingScanItem = null;
+
+var html5QrCode = null;
+var currentScannerTarget = 'director';
+var cameraIsRunning = false;
+var lastScannedCode = '';
+var lastScanTime = 0;
+var SCAN_COOLDOWN = 1500;
+var currentCameraId = null;
+
+window.showToast = function(msg, type) {
+    type = type || 'default';
+    var t = document.getElementById('toast');
+    if (!t) return;
+    t.innerHTML = msg;
+    t.className = 'toast show ' + type;
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function() { t.className = 'toast'; }, 3000);
+};
+
+window.showCustomConfirm = function(title, text, onConfirm) {
+    var modal = document.getElementById('custom-confirm-modal');
+    var titleEl = document.getElementById('custom-confirm-title');
+    var textEl = document.getElementById('custom-confirm-text');
+    var btnOk = document.getElementById('custom-confirm-ok');
+    var btnCancel = document.getElementById('custom-confirm-cancel');
+
+    if (!modal) return;
+
+    titleEl.innerText = title || 'Подтвердите действие';
+    textEl.innerText = text || '';
+    
+    var newBtnOk = btnOk.cloneNode(true);
+    var newBtnCancel = btnCancel.cloneNode(true);
+    btnOk.parentNode.replaceChild(newBtnOk, btnOk);
+    btnCancel.parentNode.replaceChild(newBtnCancel, btnCancel);
+
+    modal.classList.add('open');
+
+    newBtnOk.onclick = function() {
+        modal.classList.remove('open');
+        if (onConfirm) onConfirm();
+    };
+
+    newBtnCancel.onclick = function() {
+        modal.classList.remove('open');
+    };
+    
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.classList.remove('open');
+    };
+};
+
+window.showScreen = function(id) {
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+    var el = document.getElementById(id);
+    if (el) el.classList.add('active');
+
+    if (id === 'screen-seller' && window.fbDB) {
+        try { if (window.loadMyOrders) window.loadMyOrders(); } catch(e) {}
+        try { if (window.loadCatalog) window.loadCatalog(false, true); } catch(e) {}
+    }
+
+    if (id === 'screen-director' && window.fbDB) {
+        try { if (window.loadDirectorOrders) window.loadDirectorOrders(); } catch(e) {}
+        try { if (window.loadCatalog) window.loadCatalog(true, true); } catch(e) {}
+        try { if (window.loadRevisions) window.loadRevisions(); } catch(e) {}
+        renderDirectorScanList();
+    }
+};
+
+window.selectShop = function(el, name) {
+    try {
+        var pills = document.querySelectorAll('#shop-pills .size-pill');
+        for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+        if (el) el.classList.add('active');
+        shop = name;
+    } catch(e) { console.error('selectShop:', e); }
+};
+
+window.loginSeller = function() {
+    try {
+        var nameInput = document.getElementById('seller-name');
+        var name = nameInput ? nameInput.value.trim() : '';
+        if (!shop) return showToast('Выберите магазин!', 'error');
+        if (!name) return showToast('Введите имя!', 'error');
+        seller = name;
+        try {
+            localStorage.setItem('ord_shop', shop);
+            localStorage.setItem('ord_seller', seller);
+        } catch(_) {}
+        var titleEl = document.getElementById('shop-title');
+        if (titleEl) titleEl.innerText = 'Магазин · ' + shop;
+        scanList = loadDraft();
+        if (!Array.isArray(scanList)) scanList = [];
+        showScreen('screen-seller');
+        renderScanList();
+        if (typeof loadBarcodes === 'function') loadBarcodes();
+        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof updateOnlineStatus === 'function') updateOnlineStatus();
+        if (window.fbDB) {
+            try { if (window.loadMyOrders) window.loadMyOrders(); } catch(e) {}
+            try { if (window.loadCatalog) window.loadCatalog(false, true); } catch(e) {}
+        } else {
+            showToast('База ещё загружается...', 'error');
+        }
+    } catch(e) { console.error('loginSeller:', e); }
+};
+
+window.logout = function() {
+    try {
+        localStorage.removeItem('ord_shop');
+        localStorage.removeItem('ord_seller');
+    } catch(_) {}
+    shop = ''; seller = ''; directorMode = false;
+
+    barcodeDB = {};
+    barcodesLoadedFor = '';
+    directorBarcodeDB = {};
+    directorBarcodesLoadedFor = '';
+
+    var pills = document.querySelectorAll('#shop-pills .size-pill');
+    for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+    var nameInput = document.getElementById('seller-name');
+    if (nameInput) nameInput.value = '';
+    showScreen('screen-auth');
+};
+
+window.updatePinDisplay = function() {
+    var dashes = document.querySelectorAll('#pin-display .pin-dash');
+    for (var i = 0; i < dashes.length; i++) {
+        if (i < currentPin.length) dashes[i].classList.add('active');
+        else dashes[i].classList.remove('active');
+    }
+};
+
+window.pressPin = function(num) {
+    try {
+        initAudio();
+        if (num === 'C') currentPin = '';
+        else if (currentPin.length < 4) currentPin += num;
+        updatePinDisplay();
+    } catch(e) { console.error('pressPin:', e); }
+};
+
+window.checkPin = function() {
+    try {
+        if (currentPin === '1988') {
+            directorMode = true;
+            currentPin = '';
+            updatePinDisplay();
+            showScreen('screen-director');
+            showToast('Добро пожаловать', 'success');
+        } else {
+            showToast('Неверный PIN', 'error');
+            playErrorSound();
+            currentPin = '';
+            updatePinDisplay();
+        }
+    } catch(e) { console.error('checkPin:', e); }
+};
+
+window.switchMainTab = function(tab) {
+    var tabs = ['orders','catalog','scanner'];
+    for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var btn = document.getElementById('tab-btn-' + t);
+        var sec = document.getElementById('section-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
+    }
+    if (tab === 'scanner') {
+        if (typeof loadBarcodes === 'function') loadBarcodes();
+        renderScanList();
+        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof updateOnlineStatus === 'function') updateOnlineStatus();
+    }
+};
+
+window.switchDirTab = function(tab) {
+    var tabs = ['orders','catalog','scanner'];
+    for (var i = 0; i < tabs.length; i++) {
+        var t = tabs[i];
+        var btn = document.getElementById('dir-tab-btn-' + t);
+        var sec = document.getElementById('dir-section-' + t);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (sec) sec.style.display = (t === tab) ? 'block' : 'none';
+    }
+    if (tab === 'scanner') {
+        if (typeof loadDirectorBarcodes === 'function') loadDirectorBarcodes();
+        renderDirectorScanList();
+        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof updateOnlineStatus === 'function') updateOnlineStatus();
+    }
+};
+
+window.selectDept = function(el, dept) {
+    var parent = el.parentElement;
+    if (el.classList.contains('active')) {
+        el.classList.remove('active');
+        selectedOrderDept = '';
+    } else {
+        var pills = parent.querySelectorAll('.size-pill');
+        for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+        el.classList.add('active');
+        selectedOrderDept = dept;
+    }
+    validateOrderForm();
+};
+
+window.selectCatDept = function(el, dept) {
+    var parent = el.parentElement;
+    if (el.classList.contains('active')) {
+        el.classList.remove('active');
+        selectedCatDept = '';
+    } else {
+        var pills = parent.querySelectorAll('.size-pill');
+        for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+        el.classList.add('active');
+        selectedCatDept = dept;
+    }
+    validateCatalogForm();
+};
+
+window.selectDirectorScanShop = function(el, name) {
+    var pills = document.querySelectorAll('#director-scan-shop-pills .size-pill');
+    for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
+    if (el) el.classList.add('active');
+    directorScanShop = name;
+    loadDirectorBarcodes();
+};
+
+window.changeCatQty = function(delta) {
+    var input = document.getElementById('cat-qty');
+    if (!input) return;
+    var val = parseInt(input.value) || 1;
+    if (val + delta >= 1) input.value = val + delta;
+};
+
+function validateOrderForm() {
+    var btn = document.getElementById('btn-submit-order');
+    if (!btn) return;
+    var toShopEl = document.getElementById('order-to-shop');
+    var catEl = document.getElementById('order-category');
+    if (!toShopEl || !catEl) return;
+    var toShop = toShopEl.value;
+    var category = catEl.value;
+    if (category === 'custom_add') {
+        var inp = document.getElementById('new-category-input');
+        category = inp ? inp.value.trim() : '';
+    }
+    var ok = !!(toShop && toShop !== shop && selectedOrderDept && category && window.currentOrderPhotoBase64);
+    btn.disabled = !ok;
+}
+
+function validateCatalogForm() {
+    var btn = document.getElementById('btn-submit-catalog');
+    if (!btn) return;
+    var catEl = document.getElementById('cat-category');
+    if (!catEl) return;
+    var category = catEl.value;
+    if (category === 'custom_add') {
+        var inp = document.getElementById('new-cat-category-input');
+        category = inp ? inp.value.trim() : '';
+    }
+    var ok = !!(selectedCatDept && category && window.currentCatPhotoBase64);
+    btn.disabled = !ok;
+}
+
+window.handlePhoto = function(input, previewId, setter) {
+    var file = input.files && input.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var MAX_WIDTH = 800;
+            var scaleSize = MAX_WIDTH / img.width;
+            canvas.width = MAX_WIDTH;
+            canvas.height = img.height * scaleSize;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            var base64 = canvas.toDataURL('image/jpeg', 0.7);
+            try { setter(base64); } catch(_) {}
+            var preview = document.getElementById(previewId);
+            if (preview) {
+                preview.src = base64;
+                preview.style.display = 'block';
+            }
+            if (previewId === 'order-photo-preview') validateOrderForm();
+            if (previewId === 'cat-photo-preview') validateCatalogForm();
+        };
+        img.onerror = function() { showToast('Не удалось прочитать фото', 'error'); };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+};
+
+window.resetOrderForm = function() {
+    var fields = ['order-photo-file','order-comment','order-category','order-size','new-category-input','custom-size-input'];
+    var hasData = false;
+    for (var i = 0; i < fields.length; i++) {
+        var el = document.getElementById(fields[i]);
+        if (el && el.value) { hasData = true; break; }
+    }
+    if (window.currentOrderPhotoBase64) hasData = true;
+    if (selectedOrderDept) hasData = true;
+    
+    var doReset = function() {
+        for (var i = 0; i < fields.length; i++) {
+            var el = document.getElementById(fields[i]);
+            if (el) el.value = '';
+        }
+        var preview = document.getElementById('order-photo-preview');
+        if (preview) { preview.style.display = 'none'; preview.src = ''; }
+        var nci = document.getElementById('new-category-input');
+        if (nci) nci.style.display = 'none';
+        var csi = document.getElementById('custom-size-input');
+        if (csi) csi.style.display = 'none';
+        window.currentOrderPhotoBase64 = '';
+        window.currentOrderCatalogId = null;
+        var deptPills = document.querySelectorAll('#order-dept-pills .size-pill');
+        for (var j = 0; j < deptPills.length; j++) deptPills[j].classList.remove('active');
+        selectedOrderDept = '';
+        var toSelect = document.getElementById('order-to-shop');
+        if (toSelect) {
+            for (var k = 0; k < toSelect.options.length; k++) {
+                if (toSelect.options[k].value !== shop) { toSelect.value = toSelect.options[k].value; break; }
+            }
+        }
+        validateOrderForm();
+        showToast('Форма очищена', 'success');
+    };
+
+    if (hasData) {
+        showCustomConfirm('Очистить форму?', 'Все введенные данные и фото будут удалены.', doReset);
+    } else {
+        doReset();
+    }
+};
+
+window.resetCatalogForm = function() {
+    var fields = ['cat-category','cat-size','cat-photo-file','new-cat-category-input','custom-cat-size-input'];
+    var hasData = false;
+    for (var i = 0; i < fields.length; i++) {
+        var el = document.getElementById(fields[i]);
+        if (el && el.value) { hasData = true; break; }
+    }
+    if (window.currentCatPhotoBase64) hasData = true;
+    if (selectedCatDept) hasData = true;
+
+    var doReset = function() {
+        for (var i = 0; i < fields.length; i++) {
+            var el = document.getElementById(fields[i]);
+            if (el) el.value = '';
+        }
+        var preview = document.getElementById('cat-photo-preview');
+        if (preview) { preview.style.display = 'none'; preview.src = ''; }
+        var nci = document.getElementById('new-cat-category-input');
+        if (nci) nci.style.display = 'none';
+        var csi = document.getElementById('custom-cat-size-input');
+        if (csi) csi.style.display = 'none';
+        var qtyEl = document.getElementById('cat-qty');
+        if (qtyEl) qtyEl.value = '1';
+        window.currentCatPhotoBase64 = '';
+        var deptPills = document.querySelectorAll('#cat-dept-pills .size-pill');
+        for (var j = 0; j < deptPills.length; j++) deptPills[j].classList.remove('active');
+        selectedCatDept = '';
+        validateCatalogForm();
+        showToast('Форма очищена', 'success');
+    };
+
+    if (hasData) {
+        showCustomConfirm('Очистить витрину?', 'Все введенные данные и фото будут удалены.', doReset);
+    } else {
+        doReset();
+    }
+};
+
+window.createOrder = async function() {
+    if (!window.fbDB) return showToast('Нет связи с базой', 'error');
+    var toShopEl = document.getElementById('order-to-shop');
+    var catEl = document.getElementById('order-category');
+    var sizeEl = document.getElementById('order-size');
+    var commentEl = document.getElementById('order-comment');
+    if (!toShopEl || !catEl) return;
+
+    var toShop = toShopEl.value;
+    var category = catEl.value;
+    if (category === 'custom_add') {
+        var inp = document.getElementById('new-category-input');
+        category = inp ? inp.value.trim() : '';
+    }
+    var size = sizeEl ? sizeEl.value : '';
+    if (size === 'custom_add') {
+        var inp2 = document.getElementById('custom-size-input');
+        size = inp2 ? inp2.value.trim() : '';
+    }
+    var comment = commentEl ? commentEl.value.trim() : '';
+
+    if (toShop === shop) return showToast('Нельзя заказать у себя', 'error');
+    if (!selectedOrderDept) return showToast('Выберите отдел!', 'error');
+    if (!category) return showToast('Выберите категорию!', 'error');
+    if (!window.currentOrderPhotoBase64) return showToast('Сделайте фото!', 'error');
+
+    var orderData = {
+        fromShop: shop, toShop: toShop, seller: seller,
+        dept: selectedOrderDept, category: category,
+        photo: window.currentOrderPhotoBase64, size: size || 'Без размера',
+        comment: comment, status: 'pending', date: new Date().toISOString(),
+        sourceCatalogId: window.currentOrderCatalogId || null
+    };
+
+    try {
+        await window.fbFns.addDoc(window.fbFns.collection(window.fbDB, "orders"), orderData);
+        showToast('✅ Запрос отправлен!', 'success');
+        resetOrderForm();
+        window.currentOrderCatalogId = null;
+        if (typeof window.loadMyOrders === 'function') window.loadMyOrders();
+    } catch (e) {
+        console.error(e);
+        showToast('⚠️ Ошибка сети', 'error');
+    }
+};
+
+function getEmptyStateHTML(title, text, iconType) {
+    var iconSvg = '<svg viewBox="0 0 24 24" style="opacity: 0.2; fill: var(--text-main); width: 56px; height: 56px;"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>';
+    if (iconType === 'scan') {
+        iconSvg = '<svg viewBox="0 0 24 24" style="opacity: 0.2; fill: var(--text-main); width: 56px; height: 56px;"><path fill="currentColor" d="M21 5H3v2h18V5zm0 6H3v2h18v-2zm0 6H3v2h18v-2z"/></svg>';
+    } else if (iconType === 'box') {
+        iconSvg = '<svg viewBox="0 0 24 24" style="opacity: 0.2; fill: var(--text-main); width: 56px; height: 56px;"><path fill="currentColor" d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg>';
+    }
+    return '<div class="empty-state">' + iconSvg + 
+           '<div class="empty-state-title">' + title + '</div>' +
+           '<div class="empty-state-text">' + text + '</div>' +
+           '</div>';
+}
+
+function renderOrderCard(o, isDirector) {
+    isDirector = !!isDirector;
+    var photoHtml = o.photo ? '<img src="' + o.photo + '" class="order-photo" style="border-radius: 20px;" loading="lazy">' : '';
+    var header;
+    if (isDirector) {
+        header = '<span><b>' + o.fromShop + '</b> → <b>' + o.toShop + '</b></span>';
+    } else if (o.toShop === shop) {
+        header = '<span>От: <b>' + o.fromShop + '</b> (' + o.seller + ')</span>';
+    } else {
+        header = '<span>Кому: <b>' + o.toShop + '</b></span>';
+    }
+    var actionsHtml = '';
+
+    if (isDirector) {
+        actionsHtml = '<div style="display:flex; gap:8px; margin-top:8px;">' +
+            '<button class="btn-edit" style="flex:1;" onclick="directorEditOrder(\'' + o.id + '\')">✏️ Изменить</button>' +
+            '<button class="btn-del" style="flex:1;" onclick="directorDeleteOrder(\'' + o.id + '\')">🗑 Удалить</button>' +
+            '</div>';
+        if (o.status !== 'pending') {
+            actionsHtml = '<div style="font-size:12px; margin-top:8px; font-weight:700; color:var(--text-muted);">Статус: ' + (o.status === 'accepted' ? '✅ Принят' : '❌ Отклонён') + '</div>' + actionsHtml;
+        }
+    } else if (o.status === 'pending') {
+        if (o.toShop === shop) {
+            actionsHtml = '<div style="display:flex; gap:8px; margin-top:8px;">' +
+                '<button class="btn-main" style="background:var(--success); color:#fff; padding:10px; font-size:13px;" onclick="updateOrderStatus(\'' + o.id + '\', \'accepted\', \'' + (o.sourceCatalogId || '') + '\')">Принять</button>' +
+                '<button class="btn-del" style="flex:1;" onclick="updateOrderStatus(\'' + o.id + '\', \'rejected\')">Отклонить</button>' +
+                '</div>';
+        }
+    } else {
+        actionsHtml = '<div style="font-size:12px; margin-top:8px; font-weight:700;">Статус: ' + (o.status === 'accepted' ? '✅ Принят (Товар списан)' : '❌ Отклонен') + '</div>';
+    }
+
+    var commentHtml = o.comment ? '<div style="font-size:13px; color:var(--text-muted); background:var(--bg-app); padding:8px; border-radius:8px;">💬 ' + o.comment + '</div>' : '';
+
+    return '<div class="order-card ' + o.status + '">' + photoHtml +
+        '<div class="order-header">' + header + '</div>' +
+        '<div class="order-title">' + o.category + ' <span style="font-size:13px; color:var(--text-muted);">| ' + o.size + '</span></div>' +
+        '<div class="order-details">Отдел: ' + o.dept + '</div>' +
+        commentHtml + actionsHtml + '</div>';
+}
+
+window.loadMyOrders = async function() {
+    if (!window.fbDB) {
+        var inEl0 = document.getElementById('orders-incoming-list');
+        if (inEl0) inEl0.innerHTML = getEmptyStateHTML('Нет связи', 'База данных недоступна', 'box');
+        var outEl0 = document.getElementById('orders-outgoing-list');
+        if (outEl0) outEl0.innerHTML = getEmptyStateHTML('Нет связи', 'База данных недоступна', 'box');
+        return;
+    }
+    try {
+        var qIn = window.fbFns.query(window.fbFns.collection(window.fbDB, "orders"), window.fbFns.where("toShop", "==", shop));
+        var snapIn = await window.fbFns.getDocs(qIn);
+        allIncomingOrders = [];
+        snapIn.forEach(function(d) { allIncomingOrders.push(Object.assign({id: d.id}, d.data())); });
+        var inEl = document.getElementById('orders-incoming-list');
+        if (inEl) inEl.innerHTML = allIncomingOrders.length
+            ? allIncomingOrders.map(function(o) { return renderOrderCard(o); }).join('')
+            : getEmptyStateHTML('Здесь пока пусто', 'Нет входящих запросов', 'box');
+    } catch(e) {
+        console.log(e);
+        var inEl2 = document.getElementById('orders-incoming-list');
+        if (inEl2) inEl2.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
+    }
+
+    try {
+        var qOut = window.fbFns.query(window.fbFns.collection(window.fbDB, "orders"), window.fbFns.where("fromShop", "==", shop));
+        var snapOut = await window.fbFns.getDocs(qOut);
+        var ordersOut = [];
+        snapOut.forEach(function(d) { ordersOut.push(Object.assign({id: d.id}, d.data())); });
+        var outEl = document.getElementById('orders-outgoing-list');
+        if (outEl) outEl.innerHTML = ordersOut.length
+            ? ordersOut.map(function(o) { return renderOrderCard(o); }).join('')
+            : getEmptyStateHTML('Здесь пока пусто', 'Нет исходящих запросов', 'box');
+    } catch(e) {
+        console.log(e);
+        var outEl2 = document.getElementById('orders-outgoing-list');
+        if (outEl2) outEl2.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
+    }
+};
+
+window.updateOrderStatus = async function(orderId, status, catalogId) {
+    catalogId = catalogId || '';
+    if (!window.fbDB) return showToast('Нет связи', 'error');
+    try {
+        await window.fbFns.updateDoc(window.fbFns.doc(window.fbDB, "orders", orderId), { status: status });
+        if (status === 'accepted' && catalogId && catalogId !== 'null') {
+            try {
+                var itemRef = window.fbFns.doc(window.fbDB, "catalog", catalogId);
+                await window.fbFns.runTransaction(window.fbDB, async function(transaction) {
+                    var docSnap = await transaction.get(itemRef);
+                    if (docSnap.exists()) {
+                        var currentQty = docSnap.data().qty || 0;
+                        if (currentQty > 0) transaction.update(itemRef, { qty: currentQty - 1 });
+                    }
+                });
+                catalogCache = null;
+                showToast('Товар списан с витрины', 'success');
+            } catch (err) {
+                console.error("Ошибка списания:", err);
+                showToast('Заказ принят, но не удалось списать товар', 'error');
+            }
+        }
+        if (typeof window.loadMyOrders === 'function') window.loadMyOrders();
+    } catch(e) { console.error(e); showToast('Ошибка обновления статуса', 'error'); }
+};
+
+window.addToCatalog = async function() {
+    if (!window.fbDB) return showToast('Нет связи с базой', 'error');
+    var catEl = document.getElementById('cat-category');
+    var sizeEl = document.getElementById('cat-size');
+    var yearEl = document.getElementById('cat-year');
+    var qtyEl = document.getElementById('cat-qty');
+    if (!catEl) return;
+
+    var category = catEl.value;
+    if (category === 'custom_add') {
+        var inp = document.getElementById('new-cat-category-input');
+        category = inp ? inp.value.trim() : '';
+    }
+    var size = sizeEl ? sizeEl.value : '';
+    if (size === 'custom_add') {
+        var inp2 = document.getElementById('custom-cat-size-input');
+        size = inp2 ? inp2.value.trim() : '';
+    }
+    var year = yearEl ? yearEl.value : 'Без года';
+    var qty = qtyEl ? (parseInt(qtyEl.value) || 1) : 1;
+
+    if (!selectedCatDept) return showToast('Выберите отдел!', 'error');
+    if (!category) return showToast('Выберите категорию!', 'error');
+    if (!window.currentCatPhotoBase64) return showToast('Сделайте фото!', 'error');
+
+    var itemData = {
+        shop: shop, seller: seller, dept: selectedCatDept, category: category,
+        photo: window.currentCatPhotoBase64, size: size || 'Без размера', year: year, qty: qty,
+        date: new Date().toISOString()
+    };
+
+    try {
+        await window.fbFns.addDoc(window.fbFns.collection(window.fbDB, "catalog"), itemData);
+        showToast('✅ Опубликовано!', 'success');
+
+        var photoFile = document.getElementById('cat-photo-file');
+        if (photoFile) photoFile.value = '';
+        var preview = document.getElementById('cat-photo-preview');
+        if (preview) preview.style.display = 'none';
+        window.currentCatPhotoBase64 = '';
+        if (catEl) catEl.value = '';
+        if (sizeEl) sizeEl.value = '';
+        if (qtyEl) qtyEl.value = '1';
+        var nci = document.getElementById('new-cat-category-input');
+        if (nci) nci.style.display = 'none';
+        var csi = document.getElementById('custom-cat-size-input');
+        if (csi) csi.style.display = 'none';
+        var deptPills = document.querySelectorAll('#cat-dept-pills .size-pill');
+        for (var i = 0; i < deptPills.length; i++) deptPills[i].classList.remove('active');
+        selectedCatDept = '';
+        validateCatalogForm();
+        catalogCache = null;
+        if (typeof window.loadCatalog === 'function') window.loadCatalog(false, true);
+    } catch (e) { console.error(e); showToast('Ошибка', 'error'); }
+};
+
+window.selectCatalogCategory = function(cat) {
+    if (cat === '' || currentCatalogCategory === cat) currentCatalogCategory = '';
+    else currentCatalogCategory = cat;
+    renderSellerCatalog();
+};
+
+window.selectDirectorCatalogCategory = function(cat) {
+    if (cat === '' || currentDirectorCatalogCategory === cat) currentDirectorCatalogCategory = '';
+    else currentDirectorCatalogCategory = cat;
+    renderDirectorCatalog();
+};
+
+window.toggleCatalogFilter = function(type) {
+    currentCatalogFilter = type;
+    currentCatalogCategory = '';
+    var btns = document.querySelectorAll('[id^="btn-filter-"]');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    var idMap = { 'all': 'btn-filter-all', 'mine': 'btn-filter-mine', 'Алик': 'btn-filter-alik', 'Мода': 'btn-filter-moda', 'Твой стиль': 'btn-filter-style' };
+    var target = document.getElementById(idMap[type]);
+    if (target) target.classList.add('active');
+    renderSellerCatalog();
+};
+
+window.toggleDirectorCatalogFilter = function(type) {
+    currentDirectorCatalogFilter = type;
+    currentDirectorCatalogCategory = '';
+    var btns = document.querySelectorAll('[id^="dir-filter-"]');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    var idMap = { 'all': 'dir-filter-all', 'Алик': 'dir-filter-alik', 'Мода': 'dir-filter-moda', 'Твой стиль': 'dir-filter-style' };
+    var target = document.getElementById(idMap[type]);
+    if (target) target.classList.add('active');
+    renderDirectorCatalog();
+};
+
+function renderCategoryPills(containerId, items, currentCat, onClickName) {
+    var container = document.getElementById(containerId);
+    if (!container) return;
+
+    var filterShop = null;
+    if (onClickName === 'selectCatalogCategory') {
+        if (currentCatalogFilter === 'mine') filterShop = shop;
+        else if (currentCatalogFilter !== 'all') filterShop = currentCatalogFilter;
+    } else {
+        filterShop = (currentDirectorCatalogFilter === 'all') ? null : currentDirectorCatalogFilter;
+    }
+
+    if (!filterShop) {
+        if (container.dataset.sig !== 'hidden') {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            container.dataset.sig = 'hidden';
+        }
+        return;
+    }
+
+    var cats = {};
+    items.forEach(function(i) {
+        if (i.shop === filterShop) cats[i.category] = (cats[i.category] || 0) + 1;
+    });
+    var catList = Object.keys(cats);
+    if (catList.length === 0) {
+        if (container.dataset.sig !== 'empty') {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            container.dataset.sig = 'empty';
+        }
+        return;
+    }
+
+    var sig = filterShop + '|' + currentCat + '|' + catList.map(function(c) { return c + ':' + cats[c]; }).join(',');
+    if (container.dataset.sig === sig) return;
+    container.dataset.sig = sig;
+
+    container.style.display = 'flex';
+    var html = '<div class="size-pill ' + (currentCat === '' ? 'active' : '') +
+        '" style="padding:6px 12px; font-size:12px;" onclick="' + onClickName + '(\'\')">Все категории</div>';
+    catList.forEach(function(c) {
+        html += '<div class="size-pill ' + (currentCat === c ? 'active' : '') +
+            '" style="padding:6px 12px; font-size:12px;" onclick="' + onClickName + '(\'' +
+            c.replace(/'/g, "\\'") + '\')">' + c + ' (' + cats[c] + ')</div>';
+    });
+    container.innerHTML = html;
+}
+
+function renderSellerCatalog() {
+    var list = document.getElementById('catalog-list');
+    if (!list) return;
+
+    renderCategoryPills('catalog-category-pills', allCatalogItems, currentCatalogCategory, 'selectCatalogCategory');
+
+    var filtered = allCatalogItems;
+    if (currentCatalogFilter === 'mine') {
+        filtered = filtered.filter(function(o) { return o.shop === shop; });
+    } else if (currentCatalogFilter !== 'all') {
+        filtered = filtered.filter(function(o) { return o.shop === currentCatalogFilter; });
+    }
+    if (currentCatalogCategory) {
+        filtered = filtered.filter(function(o) { return o.category === currentCatalogCategory; });
+    }
+    var visible = filtered.filter(function(i) { return i.qty > 0; });
+
+    if (visible.length === 0) {
+        list.innerHTML = getEmptyStateHTML('Пусто', 'Нет товаров по выбранным фильтрам', 'box');
+        return;
+    }
+    list.innerHTML = visible.map(function(item) {
+        return '<div class="order-card" style="padding: 12px;">' +
+            '<img src="' + item.photo + '" class="order-photo" style="height: 180px; border-radius: 20px;" loading="lazy">' +
+            '<div class="order-header"><span>' + item.shop + '</span></div>' +
+            '<div class="order-title">' + item.category + '</div>' +
+            '<div class="order-details" style="display:flex; justify-content:space-between;">' +
+            '<span>' + item.size + ' | ' + item.year + '</span>' +
+            '<span style="color:var(--success); font-weight:800;">' + item.qty + ' шт.</span>' +
+            '</div>' +
+            '<button class="btn-main" style="padding:10px; font-size:13px; margin-top:8px;" onclick="orderSingleItem(\'' + item.id + '\')">⚡ Заказать сейчас</button>' +
+            '</div>';
+    }).join('');
+}
+
+function renderDirectorCatalog() {
+    var el = document.getElementById('director-catalog-list');
+    if (!el) return;
+
+    var counts = { all: allCatalogItems.length, 'Алик': 0, 'Мода': 0, 'Твой стиль': 0 };
+    allCatalogItems.forEach(function(i) {
+        if (counts[i.shop] !== undefined) counts[i.shop]++;
+    });
+    var labels = { 'dir-filter-all': 'Все', 'dir-filter-alik': 'Алик', 'dir-filter-moda': 'Мода', 'dir-filter-style': 'Стиль' };
+    var keyMap = { 'dir-filter-all': 'all', 'dir-filter-alik': 'Алик', 'dir-filter-moda': 'Мода', 'dir-filter-style': 'Твой стиль' };
+    Object.keys(labels).forEach(function(id) {
+        var tabEl = document.getElementById(id);
+        if (tabEl) tabEl.innerText = labels[id] + ' (' + (counts[keyMap[id]] || 0) + ')';
+    });
+
+    renderCategoryPills('director-category-pills', allCatalogItems, currentDirectorCatalogCategory, 'selectDirectorCatalogCategory');
+
+    var filteredDir = allCatalogItems;
+    if (currentDirectorCatalogFilter !== 'all') {
+        filteredDir = filteredDir.filter(function(i) { return i.shop === currentDirectorCatalogFilter; });
+    }
+    if (currentDirectorCatalogCategory) {
+        filteredDir = filteredDir.filter(function(i) { return i.category === currentDirectorCatalogCategory; });
+    }
+
+    if (filteredDir.length === 0) {
+        el.innerHTML = getEmptyStateHTML('Пусто', 'На витрине нет товаров', 'box');
+        return;
+    }
+    el.innerHTML = filteredDir.map(function(item) {
+        return '<div class="order-card" style="padding:12px;">' +
+            '<img src="' + item.photo + '" class="order-photo" style="border-radius: 20px;" loading="lazy">' +
+            '<div class="order-header"><span>🏪 <b>' + item.shop + '</b></span><span>' + (item.seller || '') + '</span></div>' +
+            '<div class="order-title">' + item.category + '</div>' +
+            '<div class="order-details">' + item.size + ' | ' + item.year +
+            ' | <span style="color:var(--success); font-weight:800;">' + item.qty + ' шт.</span></div>' +
+            '<div style="display:flex; gap:8px; margin-top:8px;">' +
+            '<button class="btn-edit" style="flex:1;" onclick="directorEditCatalog(\'' + item.id + '\')">✏️ Изменить</button>' +
+            '<button class="btn-del" style="flex:1;" onclick="directorDeleteCatalog(\'' + item.id + '\')">🗑 Удалить</button>' +
+            '</div></div>';
+    }).join('');
+}
+
+window.loadCatalog = async function(isDirector, forceReload) {
+    isDirector = !!isDirector;
+    forceReload = !!forceReload;
+    if (!window.fbDB) return;
+
+    var now = Date.now();
+    var needFetch = forceReload || !catalogCache || (now - catalogCacheTime > CATALOG_CACHE_TTL);
+
+    if (needFetch) {
+        if (catalogLoading) return;
+        catalogLoading = true;
+        try {
+            var snapshot = await window.fbFns.getDocs(window.fbFns.collection(window.fbDB, "catalog"));
+            catalogCache = [];
+            snapshot.forEach(function(d) { catalogCache.push(Object.assign({id: d.id}, d.data())); });
+            catalogCacheTime = Date.now();
+        } catch(e) {
+            console.log('loadCatalog fetch error', e);
+            catalogLoading = false;
+            return;
+        }
+        catalogLoading = false;
+    }
+
+    allCatalogItems = catalogCache;
+    if (isDirector) renderDirectorCatalog();
+    else renderSellerCatalog();
+};
+
+window.orderSingleItem = function(itemId) {
+    var item = null;
+    for (var i = 0; i < allCatalogItems.length; i++) {
+        if (allCatalogItems[i].id === itemId) { item = allCatalogItems[i]; break; }
+    }
+    if (!item) return;
+    if (item.shop === shop) return showToast('Это ваш товар', 'error');
+    if (item.qty <= 0) return showToast('Товар закончился', 'error');
+
+    switchMainTab('orders');
+    var toEl = document.getElementById('order-to-shop');
+    if (toEl) toEl.value = item.shop;
+
+    var deptPills = document.querySelectorAll('#order-dept-pills .size-pill');
+    for (var j = 0; j < deptPills.length; j++) {
+        if (deptPills[j].innerText === item.dept) {
+            deptPills[j].classList.add('active');
+            selectedOrderDept = item.dept;
+        } else {
+            deptPills[j].classList.remove('active');
+        }
+    }
+    if (!document.querySelector('#order-dept-pills .size-pill.active')) {
+        selectedOrderDept = '';
+    }
+
+    var catSelect = document.getElementById('order-category');
+    if (catSelect) {
+        var found = false;
+        for (var k = 0; k < catSelect.options.length; k++) {
+            if (catSelect.options[k].value === item.category) { found = true; break; }
+        }
+        if (!found) catSelect.innerHTML += '<option value="' + item.category + '">' + item.category + '</option>';
+        catSelect.value = item.category;
+    }
+
+    var sizeSelect = document.getElementById('order-size');
+    if (sizeSelect) {
+        var sizeFound = false;
+        for (var m = 0; m < sizeSelect.options.length; m++) {
+            if (sizeSelect.options[m].value === item.size) { sizeFound = true; break; }
+        }
+        if (sizeFound) {
+            sizeSelect.value = item.size;
+            var csi = document.getElementById('custom-size-input');
+            if (csi) csi.style.display = 'none';
+        } else {
+            sizeSelect.value = 'custom_add';
+            var csi2 = document.getElementById('custom-size-input');
+            if (csi2) { csi2.style.display = 'block'; csi2.value = item.size; }
+        }
+    }
+
+    if (item.photo) {
+        window.currentOrderPhotoBase64 = item.photo;
+        var preview = document.getElementById('order-photo-preview');
+        if (preview) { preview.src = item.photo; preview.style.display = 'block'; }
+    }
+
+    var commentEl = document.getElementById('order-comment');
+    if (commentEl) commentEl.value = 'Заказ товара с витрины. Год: ' + item.year;
+    window.currentOrderCatalogId = item.id;
+    showToast('Товар подставлен в форму заказа', 'success');
+    validateOrderForm();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+function cleanBarcode(v) {
+    return String(v || '').split('.')[0].replace(/[^0-9]/g, '');
+}
+
+function normalizeBarcodeJSON(raw) {
+    var out = {};
+    if (Array.isArray(raw)) {
+        raw.forEach(function(row) {
+            if (!row) return;
+            var code = cleanBarcode(row['Штрихкод'] || row['barcode'] || row['code'] || '');
+            if (!code) return;
+            out[code] = {
+                name:       String(row['Владелец'] || row['name'] || '').trim(),
+                size:       String(row['Размер']   || row['size'] || '').trim() || 'Без размера',
+                year:       String(row['Год']      || row['year'] || '').trim() || 'Без года',
+                category:   String(row['Категория'] || row['category'] || '').trim(),
+                dept:       String(row['Отдел']    || row['dept'] || '').trim(),
+                system_qty: Number(row['Количество'] != null ? row['Количество'] : (row['system_qty'] != null ? row['system_qty'] : 0)) || 0
+            };
+        });
+        return out;
+    }
+    if (raw && typeof raw === 'object') {
+        Object.keys(raw).forEach(function(k) {
+            var code = cleanBarcode(k);
+            if (!code) return;
+            var v = raw[k] || {};
+            out[code] = {
+                name:       String(v.name || v['Владелец'] || '').trim(),
+                size:       String(v.size || v['Размер'] || '').trim() || 'Без размера',
+                year:       String(v.year || v['Год'] || '').trim() || 'Без года',
+                category:   String(v.category || v['Категория'] || '').trim(),
+                dept:       String(v.dept || v['Отдел'] || '').trim(),
+                system_qty: Number(v.system_qty != null ? v.system_qty : (v['Количество'] != null ? v['Количество'] : 0)) || 0
+            };
+        });
+        return out;
+    }
+    return out;
+}
+
+function extractCategory(ownerLabel) {
+    var s = String(ownerLabel || '').trim();
+    if (!s) return '';
+    var re = /\s*[\d\s.,]+\s*(?:₽|руб\.?|рублей|р\.?|р)\s*$/i;
+    var stripped = s.replace(re, '').trim();
+    return stripped || s;
+}
+
+function normalizeCategory(s) {
+    return String(s || '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[^a-zа-я0-9]+/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function getCanonicalCategory(meta) {
+    if (!meta || !meta.name) return '';
+    return extractCategory(meta.name);
+}
+
+function levenshtein(a, b) {
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    var prev = [];
+    for (var j = 0; j <= b.length; j++) prev[j] = j;
+    for (var i = 1; i <= a.length; i++) {
+        var cur = [i];
+        for (var j = 1; j <= b.length; j++) {
+            cur[j] = Math.min(
+                prev[j] + 1,
+                cur[j-1] + 1,
+                prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1)
+            );
+        }
+        prev = cur;
+    }
+    return prev[b.length];
+}
+
+var CATEGORY_RANK = { match: 0, close: 1, mismatch: 3 };
+
+function compareCategories(productCat, revCat) {
+    var na = normalizeCategory(productCat);
+    var nb = normalizeCategory(revCat);
+    if (!nb) return 'match';
+    if (!na) return 'match';
+    if (na === nb) return 'match';
+    var dist = levenshtein(na, nb);
+    var maxLen = Math.max(na.length, nb.length);
+    if (dist <= 2 && maxLen >= 5) return 'close';
+    return 'mismatch';
+}
+
+async function loadBarcodes() {
+    if (barcodesLoadedFor === shop && Object.keys(barcodeDB).length > 0) return;
+
+    var file = BARCODE_FILES[shop];
+    var cacheKey = 'barcode_cache_' + shop;
+
+    if (!file) {
+        barcodeDB = {};
+        barcodesLoadedFor = shop;
+        return;
+    }
+
+    try {
+        var res = await fetch(file, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var raw = await res.json();
+        barcodeDB = normalizeBarcodeJSON(raw);
+        try { localStorage.setItem(cacheKey, JSON.stringify(barcodeDB)); } catch(_) {}
+        barcodesLoadedFor = shop;
+        return;
+    } catch (e) {
+        console.warn('loadBarcodes: fetch failed', file, e);
+    }
+
+    try {
+        var cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            barcodeDB = JSON.parse(cached) || {};
+            barcodesLoadedFor = shop;
+            return;
+        }
+    } catch(_) {}
+
+    barcodeDB = {};
+    barcodesLoadedFor = shop;
+}
+
+async function loadDirectorBarcodes() {
+    if (directorBarcodesLoadedFor === directorScanShop && Object.keys(directorBarcodeDB).length > 0) return;
+
+    var file = BARCODE_FILES[directorScanShop];
+    var cacheKey = 'barcode_cache_' + directorScanShop;
+
+    if (!file) {
+        directorBarcodeDB = {};
+        directorBarcodesLoadedFor = directorScanShop;
+        return;
+    }
+
+    try {
+        var res = await fetch(file, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        var raw = await res.json();
+        directorBarcodeDB = normalizeBarcodeJSON(raw);
+        try { localStorage.setItem(cacheKey, JSON.stringify(directorBarcodeDB)); } catch(_) {}
+        directorBarcodesLoadedFor = directorScanShop;
+        return;
+    } catch (e) {
+        console.warn('loadDirectorBarcodes: fetch failed', file, e);
+    }
+
+    try {
+        var cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            directorBarcodeDB = JSON.parse(cached) || {};
+            directorBarcodesLoadedFor = directorScanShop;
+            return;
+        }
+    } catch(_) {}
+
+    directorBarcodeDB = {};
+    directorBarcodesLoadedFor = directorScanShop;
+}
+
+function queueOffline(type, data) {
+    try {
+        var q = JSON.parse(localStorage.getItem('offline_queue') || '[]');
+        q.push({ type: type, data: data, id: Date.now() });
+        localStorage.setItem('offline_queue', JSON.stringify(q));
+    } catch(e) { console.error('queueOffline', e); }
+}
+
+async function syncOfflineData() {
+    if (!navigator.onLine || !window.fbDB) return;
+    var q;
+    try { q = JSON.parse(localStorage.getItem('offline_queue') || '[]'); } catch(_) { q = []; }
+    if (!q.length) return;
+    var ok = 0;
+    for (var i = 0; i < q.length; i++) {
+        var it = q[i];
+        try {
+            if (it.type === 'revision') {
+                await window.fbFns.addDoc(window.fbFns.collection(window.fbDB, 'revisions'), it.data);
+            } else if (it.type === 'order') {
+                await window.fbFns.addDoc(window.fbFns.collection(window.fbDB, 'orders'), it.data);
+            } else if (it.type === 'catalog') {
+                await window.fbFns.addDoc(window.fbFns.collection(window.fbDB, 'catalog'), it.data);
+            }
+            ok++;
+        } catch (e) {
+            console.error('sync', e);
+            break;
+        }
+    }
+    if (ok) {
+        try { localStorage.setItem('offline_queue', JSON.stringify(q.slice(ok))); } catch(_) {}
+        showToast('✅ Синхронизировано: ' + ok, 'success');
+        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof loadMyOrders === 'function' && shop) loadMyOrders();
+    }
+}
+
+function updateOnlineStatus() {
+    var bars = [document.getElementById('offline-bar'), document.getElementById('dir-offline-bar')];
+    bars.forEach(function(bar) {
+        if (!bar) return;
+        bar.style.display = navigator.onLine ? 'none' : 'block';
+    });
+}
+window.addEventListener('online', function() { updateOnlineStatus(); syncOfflineData(); });
+window.addEventListener('offline', updateOnlineStatus);
+
+function buildPendingScanItem(code, meta) {
+    var size = (meta && meta.size) || 'Без размера';
+    var year = (meta && meta.year) || 'Без года';
+    var name = (meta && meta.name) || ('Товар ' + code);
+    var productCat = getCanonicalCategory(meta);
+
+    var revCategoryInput = document.getElementById('revision-category-input');
+    var revCategory = revCategoryInput ? revCategoryInput.value.trim() : '';
+
+    var status = compareCategories(productCat, revCategory);
+
+    var existing = null;
+    for (var i = 0; i < scanList.length; i++) {
+        if (scanList[i].code === code && scanList[i].size === size && scanList[i].year === year) {
+            existing = scanList[i]; break;
+        }
+    }
+
+    return {
+        id: 'pending_' + Date.now(),
+        code: code,
+        name: name,
+        category: (meta && meta.category) || '',
+        dept: (meta && meta.dept) || '',
+        size: size,
+        year: year,
+        qty: 1,
+        system_qty: Number(meta && meta.system_qty) || 0,
+        productCat: productCat,
+        revCat: revCategory,
+        categoryStatus: status,
+        alreadyInList: existing ? existing.qty : 0
+    };
+}
+
+function renderPendingScanPreview() {
+    var container = document.getElementById('scan-preview-container');
+    if (!container) return;
+    if (!pendingScanItem) {
+        container.innerHTML = '';
+        return;
+    }
+
+    var item = pendingScanItem;
+    var sizeOptions = ['Без размера','M','L','XL','2XL','3XL'];
+    var yearOptions = ['Без года','2023','2024','2025','2026'];
+    if (item.size && sizeOptions.indexOf(item.size) === -1) sizeOptions.push(item.size);
+    if (item.year && yearOptions.indexOf(item.year) === -1) yearOptions.push(item.year);
+
+    var sizeOptsHtml = sizeOptions.map(function(s) {
+        return '<option value="' + s + '"' + (item.size === s ? ' selected' : '') + '>' + s + '</option>';
+    }).join('');
+    var yearOptsHtml = yearOptions.map(function(y) {
+        return '<option value="' + y + '"' + (item.year === y ? ' selected' : '') + '>' + y + '</option>';
+    }).join('');
+
+    var status = item.categoryStatus || 'match';
+    var statusLine = '';
+    if (status === 'mismatch') {
+        statusLine = '<div style="font-size:12px; font-weight:800; color:var(--danger); margin-top:6px;">🔴 Другая категория: ' + (item.productCat || '—') + ' ≠ ' + (item.revCat || '—') + '</div>';
+    } else if (status === 'close') {
+        statusLine = '<div style="font-size:12px; font-weight:800; color:var(--warn); margin-top:6px;">🟡 Похоже, но не точно: ' + (item.productCat || '—') + ' / ' + (item.revCat || '—') + '</div>';
+    }
+
+    var alreadyLine = item.alreadyInList > 0
+        ? '<div style="font-size:12px; font-weight:800; color:var(--success); margin-top:6px;">Уже в списке: ' + item.alreadyInList + ' шт. → станет ' + (item.alreadyInList + 1) + '</div>'
+        : '<div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-top:6px;">Новая позиция</div>';
+
+    var metaLine = '';
+    if (item.category || item.dept) {
+        metaLine = (item.category || '') + (item.category && item.dept ? ' · ' : '') + (item.dept || '');
+    }
+
+    var cardStyle = 'background:#FFF; padding:14px; border-radius:14px; margin-bottom:8px; border:2px dashed var(--primary);';
+    if (status === 'mismatch') {
+        cardStyle = 'background:rgba(255,69,58,0.06); padding:14px; border-radius:14px; margin-bottom:8px; border:2px dashed var(--danger);';
+    } else if (status === 'close') {
+        cardStyle = 'background:rgba(255,159,10,0.06); padding:14px; border-radius:14px; margin-bottom:8px; border:2px dashed var(--warn);';
+    }
+
+    container.innerHTML = '<div style="font-size:11px; color:var(--text-muted); font-weight:800; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Новый скан</div>' +
+        '<div style="' + cardStyle + '">' +
+        '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">' +
+        '<div style="flex:1;">' +
+        '<div style="font-weight:900; font-size:15px;">' + item.name + '</div>' +
+        (metaLine ? '<div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">' + metaLine + '</div>' : '') +
+        '<div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Код: ' + item.code + '</div>' +
+        '</div>' +
+        '<button onclick="cancelScanPreview()" style="background:none; border:none; color:var(--danger); font-size:22px; line-height:1; padding:0;">&times;</button>' +
+        '</div>' +
+        statusLine +
+        alreadyLine +
+        '<div style="display:flex; gap:8px; margin-top:10px;">' +
+        '<select class="input-field" style="padding:8px; font-size:13px;" onchange="updatePendingScanItem(\'size\', this.value)">' + sizeOptsHtml + '</select>' +
+        '<select class="input-field" style="padding:8px; font-size:13px;" onchange="updatePendingScanItem(\'year\', this.value)">' + yearOptsHtml + '</select>' +
+        '</div>' +
+        '<div style="display:flex; gap:8px; margin-top:10px;">' +
+        '<button class="btn-edit" style="flex:1; padding:12px;" onclick="cancelScanPreview()">Отмена</button>' +
+        '<button class="btn-main" style="flex:2; margin:0; padding:12px; font-size:14px;" onclick="confirmScanPreview()">Добавить в список</button>' +
+        '</div>' +
+        '</div>';
+}
+
+window.updatePendingScanItem = function(field, value) {
+    if (!pendingScanItem) return;
+    if (field !== 'size' && field !== 'year') return;
+    pendingScanItem[field] = value;
+    var existing = null;
+    for (var i = 0; i < scanList.length; i++) {
+        if (scanList[i].code === pendingScanItem.code &&
+            scanList[i].size === pendingScanItem.size &&
+            scanList[i].year === pendingScanItem.year) {
+            existing = scanList[i]; break;
+        }
+    }
+    pendingScanItem.alreadyInList = existing ? existing.qty : 0;
+    renderPendingScanPreview();
+};
+
+window.cancelScanPreview = function() {
+    pendingScanItem = null;
+    renderPendingScanPreview();
+};
+
+window.confirmScanPreview = function() {
+    if (!pendingScanItem) return;
+    var item = pendingScanItem;
+
+    var existing = null;
+    for (var i = 0; i < scanList.length; i++) {
+        if (scanList[i].code === item.code && scanList[i].size === item.size && scanList[i].year === item.year) {
+            existing = scanList[i]; break;
+        }
+    }
+    if (existing) {
+        existing.qty += 1;
+        if (CATEGORY_RANK[item.categoryStatus] > CATEGORY_RANK[existing.categoryStatus || 'match']) {
+            existing.categoryStatus = item.categoryStatus;
+            existing.productCat = item.productCat;
+            existing.revCat = item.revCat;
+        }
+        showToast('+1 · ' + existing.name, 'success');
+        playSuccessSound();
+    } else {
+        scanList.unshift({
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+            code: item.code,
+            name: item.name,
+            category: item.category,
+            dept: item.dept,
+            size: item.size,
+            year: item.year,
+            qty: 1,
+            system_qty: item.system_qty,
+            productCat: item.productCat,
+            revCat: item.revCat,
+            categoryStatus: item.categoryStatus
+        });
+        if (item.categoryStatus === 'mismatch') {
+            showToast('🔴 Другая категория: ' + (item.productCat || 'нет данных'), 'error');
+            playErrorSound();
+        } else if (item.categoryStatus === 'close') {
+            showToast('🟡 Похоже, но не точно: ' + item.productCat, 'warn');
+            playWarnSound();
+        } else {
+            showToast('Добавлен: ' + item.name, 'success');
+            playSuccessSound();
+        }
+    }
+
+    pendingScanItem = null;
+    renderPendingScanPreview();
+    persistDraft();
+    renderScanList();
+};
+
+window.processScan = async function(rawCode) {
+    var code = String(rawCode || '').replace(/[^0-9]/g, '');
+    if (!/^\d{6,14}$/.test(code)) {
+        showToast('Неверный штрих-код', 'error');
+        playErrorSound();
+        return;
+    }
+
+    var meta = barcodeDB[code] || null;
+
+    if (!meta && window.fbDB) {
+        try {
+            const q = window.fbFns.query(window.fbFns.collection(window.fbDB, "catalog"), window.fbFns.where("barcode", "==", code));
+            const snap = await window.fbFns.getDocs(q);
+            if (!snap.empty) {
+                const docData = snap.docs[0].data();
+                meta = {
+                    name: docData.category || ('Товар ' + code),
+                    size: docData.size || 'Без размера',
+                    year: docData.year || 'Без года',
+                    category: docData.category || '',
+                    dept: docData.dept || '',
+                    system_qty: 0
+                };
+            }
+        } catch(e) { console.warn("Не удалось найти в базе", e); }
+    }
+
+    var item = buildPendingScanItem(code, meta);
+    pendingScanItem = item;
+    renderPendingScanPreview();
+
+    if (item.categoryStatus === 'mismatch') {
+        playErrorSound();
+    } else if (item.categoryStatus === 'close') {
+        playWarnSound();
+    } else {
+        playSuccessSound();
+    }
+};
+
+window.renderScanList = function() {
+    var container = document.getElementById('scan-list-container');
+    if (!container) return;
+
+    if (scanList.length === 0) {
+        container.innerHTML = getEmptyStateHTML('Список пуст', 'Отсканируйте первый товар', 'scan');
+        var summary = document.getElementById('scan-summary');
+        if (summary) summary.style.display = 'none';
+        return;
+    }
+
+    var sizeOptions = ['Без размера','M','L','XL','2XL','3XL'];
+    var yearOptions = ['Без года','2023','2024','2025','2026'];
+
+    container.innerHTML = scanList.map(function(item) {
+        var sizes = sizeOptions.slice();
+        if (item.size && sizes.indexOf(item.size) === -1) sizes.push(item.size);
+        var years = yearOptions.slice();
+        if (item.year && years.indexOf(item.year) === -1) years.push(item.year);
+
+        var sizeOptsHtml = sizes.map(function(s) {
+            return '<option value="' + s + '"' + (item.size === s ? ' selected' : '') + '>' + s + '</option>';
+        }).join('');
+        var yearOptsHtml = years.map(function(y) {
+            return '<option value="' + y + '"' + (item.year === y ? ' selected' : '') + '>' + y + '</option>';
+        }).join('');
+
+        var metaLine = '';
+        if (item.category || item.dept) {
+            metaLine = (item.category || '') + (item.category && item.dept ? ' · ' : '') + (item.dept || '');
+        }
+
+        var systemLine = '';
+        if (item.system_qty > 0) {
+            var diff = item.qty - item.system_qty;
+            var color = diff !== 0 ? 'var(--danger)' : 'var(--text-muted)';
+            systemLine = '<div style="font-size:12px; font-weight:700; color:' + color + '; margin-top:6px;">Система: ' + item.system_qty + (diff !== 0 ? ' (Δ ' + (diff > 0 ? '+' : '') + diff + ')' : '') + '</div>';
+        }
+
+        var status = item.categoryStatus || 'match';
+        var statusLine = '';
+        if (status === 'mismatch') {
+            statusLine = '<div style="font-size:12px; font-weight:800; color:var(--danger); margin-top:6px;">🔴 Другая категория: ' + (item.productCat || '—') + (item.revCat ? ' ≠ ' + item.revCat : '') + '</div>';
+        } else if (status === 'close') {
+            statusLine = '<div style="font-size:12px; font-weight:800; color:var(--warn); margin-top:6px;">🟡 Похоже, но не точно: ' + (item.productCat || '—') + ' / ' + (item.revCat || '—') + '</div>';
+        }
+
+        var cardStyle = 'background:var(--bg-app); padding:12px; border-radius:12px; margin-bottom:8px;';
+        if (status === 'mismatch') {
+            cardStyle = 'background:rgba(255,69,58,0.08); padding:12px; border-radius:12px; margin-bottom:8px; border:1px solid rgba(255,69,58,0.25);';
+        } else if (status === 'close') {
+            cardStyle = 'background:rgba(255,159,10,0.08); padding:12px; border-radius:12px; margin-bottom:8px; border:1px solid rgba(255,159,10,0.25);';
+        }
+
+        return '<div style="' + cardStyle + '">' +
+            '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">' +
+            '<div style="flex:1;">' +
+            '<div style="font-weight:800; font-size:14px;">' + item.name + '</div>' +
+            (metaLine ? '<div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">' + metaLine + '</div>' : '') +
+            '<div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Код: ' + item.code + '</div>' +
+            '</div>' +
+            '<button onclick="removeScanItem(\'' + item.id + '\')" style="background:none; border:none; color:var(--danger); font-size:22px; line-height:1; padding:0;">&times;</button>' +
+            '</div>' +
+            statusLine +
+            '<div style="display:flex; gap:8px; margin-top:8px;">' +
+            '<select class="input-field" style="padding:8px; font-size:13px;" onchange="updateScanItem(\'' + item.id + '\', \'size\', this.value)">' + sizeOptsHtml + '</select>' +
+            '<select class="input-field" style="padding:8px; font-size:13px;" onchange="updateScanItem(\'' + item.id + '\', \'year\', this.value)">' + yearOptsHtml + '</select>' +
+            '</div>' +
+            '<div class="qty-control" style="margin-top:8px; width:100%;">' +
+            '<button class="qty-btn" onclick="changeScanQty(\'' + item.id + '\', -1)">-</button>' +
+            '<input type="number" class="qty-input" value="' + item.qty + '" readonly>' +
+            '<button class="qty-btn" onclick="changeScanQty(\'' + item.id + '\', 1)">+</button>' +
+            '</div>' +
+            systemLine +
+            '</div>';
+    }).join('');
+
+    var summary2 = document.getElementById('scan-summary');
+    if (summary2) summary2.style.display = 'flex';
+    updateSummary();
+};
+
+function updateSummary() {
+    var totalQty = scanList.reduce(function(s, i) { return s + i.qty; }, 0);
+    var errorCount = scanList.filter(function(i) { return i.categoryStatus === 'mismatch'; }).length;
+    var warnCount = scanList.filter(function(i) { return i.categoryStatus === 'close'; }).length;
+
+    var tp = document.getElementById('total-positions');
+    if (tp) tp.innerText = scanList.length;
+    var tq = document.getElementById('total-qty');
+    if (tq) tq.innerText = totalQty;
+    var te = document.getElementById('total-errors');
+    if (te) {
+        if (errorCount > 0) {
+            te.innerText = '🔴 ' + errorCount + (warnCount > 0 ? ' / 🟡 ' + warnCount : '');
+            te.style.color = 'var(--danger)';
+        } else if (warnCount > 0) {
+            te.innerText = '🟡 ' + warnCount;
+            te.style.color = 'var(--warn)';
+        } else {
+            te.innerText = '0';
+            te.style.color = 'var(--text-main)';
+        }
+    }
+}
+
+window.updateScanItem = function(id, field, value) {
+    if (field !== 'size' && field !== 'year') return;
+    for (var i = 0; i < scanList.length; i++) {
+        if (scanList[i].id === id) {
+            scanList[i][field] = value;
+            break;
+        }
+    }
+    persistDraft();
+    updateSummary();
+};
+
+window.changeScanQty = function(id, delta) {
+    for (var i = 0; i < scanList.length; i++) {
+        if (scanList[i].id === id) {
+            scanList[i].qty = Math.max(1, scanList[i].qty + delta);
+            break;
+        }
+    }
+    persistDraft();
+    renderScanList();
+};
+
+window.removeScanItem = function(id) {
+    scanList = scanList.filter(function(i) { return i.id !== id; });
+    persistDraft();
+    renderScanList();
+};
+
+window.clearDraft = function() {
+    if (scanList.length === 0 && !pendingScanItem) return showToast('Черновик уже пуст', 'success');
+    showCustomConfirm('Очистить черновик?', 'Все отсканированные позиции будут удалены безвозвратно.', function() {
+        scanList = [];
+        pendingScanItem = null;
+        persistDraft();
+        renderPendingScanPreview();
+        renderScanList();
+        showToast('Черновик очищен', 'success');
+    });
+};
+
+window.saveInventory = async function() {
+    if (pendingScanItem) return showToast('Подтвердите или отмените последний скан', 'warn');
+    if (scanList.length === 0) return showToast('Пустой список', 'error');
+    if (!shop || !seller) return showToast('Нет данных магазина/продавца', 'error');
+
+    var revCategoryInput = document.getElementById('revision-category-input');
+    var revCategory = revCategoryInput ? revCategoryInput.value.trim() : '';
+
+    var totalQty = scanList.reduce(function(s, i) { return s + i.qty; }, 0);
+    var totalDiff = scanList.reduce(function(s, i) {
+        return s + (i.system_qty > 0 ? (i.qty - i.system_qty) : 0);
+    }, 0);
+
+    var sortedItems = scanList.slice().sort(function(a, b) {
+        var ra = CATEGORY_RANK[a.categoryStatus] != null ? CATEGORY_RANK[a.categoryStatus] : 0;
+        var rb = CATEGORY_RANK[b.categoryStatus] != null ? CATEGORY_RANK[b.categoryStatus] : 0;
+        return ra - rb;
+    });
+
+    var errors = sortedItems.filter(function(i) { return i.categoryStatus === 'mismatch'; });
+    var warnings = sortedItems.filter(function(i) { return i.categoryStatus === 'close'; });
+
+    var docData = {
+        shop: shop,
+        seller: seller,
+        revCategory: revCategory,
+        date: new Date().toISOString(),
+        items: JSON.parse(JSON.stringify(sortedItems)),
+        totalPositions: sortedItems.length,
+        totalQty: totalQty,
+        totalDiff: totalDiff,
+        errors: errors.map(function(i) { return { code: i.code, name: i.name, productCat: i.productCat, revCat: i.revCat }; }),
+        warnings: warnings.map(function(i) { return { code: i.code, name: i.name, productCat: i.productCat, revCat: i.revCat }; }),
+        errorsCount: errors.length,
+        warningsCount: warnings.length
+    };
+
+    var doSave = async function() {
+        var clearAfter = function() {
+            scanList = [];
+            persistDraft();
+            renderScanList();
+            if (typeof loadRevisions === 'function') loadRevisions();
+        };
+
+        if (!navigator.onLine || !window.fbDB) {
+            queueOffline('revision', docData);
+            showToast('📶 Нет сети. Сохранено офлайн.', 'success');
+            clearAfter();
+            return;
+        }
+
+        try {
+            await window.fbFns.addDoc(window.fbFns.collection(window.fbDB, 'revisions'), docData);
+            showToast('✅ Ревизия сохранена', 'success');
+            clearAfter();
+        } catch (e) {
+            console.error(e);
+            queueOffline('revision', docData);
+            showToast('⚠️ Ошибка сети. Сохранено офлайн.', 'error');
+            clearAfter();
+        }
+    };
+
+    if (errors.length > 0) {
+        showCustomConfirm('Есть расхождения',
+            'Позиций с другой категорией: ' + errors.length + '. Всё равно сохранить?',
+            doSave);
+    } else {
+        doSave();
+    }
+};
+
+window.addScannedCodeToDirectorList = function(rawCode) {
+    var code = String(rawCode || '').replace(/[^0-9]/g, '');
+    if (!/^\d{6,14}$/.test(code)) {
+        showToast('Неверный штрих-код', 'error');
+        playErrorSound();
+        return;
+    }
+
+    var now = Date.now();
+    if (window.__lastDirCode === code && (now - window.__lastDirTime) < 300) return;
+    window.__lastDirCode = code;
+    window.__lastDirTime = now;
+
+    var meta = directorBarcodeDB[code] || null;
+    var size = (meta && meta.size) || 'Без размера';
+    var year = (meta && meta.year) || 'Без года';
+    var name = (meta && meta.name) || ('Товар ' + code);
+
+    var existing = null;
+    for (var i = 0; i < directorScanList.length; i++) {
+        if (directorScanList[i].code === code && directorScanList[i].size === size && directorScanList[i].year === year) {
+            existing = directorScanList[i]; break;
+        }
+    }
+    if (existing) {
+        existing.qty += 1;
+        showToast('+1 · ' + existing.name, 'success');
+        playSuccessSound();
+    } else {
+        directorScanList.unshift({
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+            code: code,
+            name: name,
+            category: (meta && meta.category) || '',
+            dept: (meta && meta.dept) || '',
+            size: size,
+            year: year,
+            qty: 1,
+            system_qty: Number(meta && meta.system_qty) || 0,
+            src_shop: directorScanShop
+        });
+        if (!meta) {
+            showToast('🟡 Нет в базе ' + directorScanShop + ': ' + code, 'warn');
+            playWarnSound();
+        } else {
+            showToast('Добавлен: ' + name + ' · ' + directorScanShop, 'success');
+            playSuccessSound();
+        }
+    }
+    persistDirectorDraft();
+    renderDirectorScanList();
+};
+
+window.renderDirectorScanList = function() {
+    var container = document.getElementById('director-scan-list-container');
+    if (!container) return;
+
+    if (directorScanList.length === 0) {
+        container.innerHTML = getEmptyStateHTML('Список пуст', 'Отсканируйте первый товар', 'scan');
+        var summary = document.getElementById('director-scan-summary');
+        if (summary) summary.style.display = 'none';
+        return;
+    }
+
+    var sizeOptions = ['Без размера','M','L','XL','2XL','3XL'];
+    var yearOptions = ['Без года','2023','2024','2025','2026'];
+
+    container.innerHTML = directorScanList.map(function(item) {
+        var sizes = sizeOptions.slice();
+        if (item.size && sizes.indexOf(item.size) === -1) sizes.push(item.size);
+        var years = yearOptions.slice();
+        if (item.year && years.indexOf(item.year) === -1) years.push(item.year);
+
+        var sizeOptsHtml = sizes.map(function(s) {
+            return '<option value="' + s + '"' + (item.size === s ? ' selected' : '') + '>' + s + '</option>';
+        }).join('');
+        var yearOptsHtml = years.map(function(y) {
+            return '<option value="' + y + '"' + (item.year === y ? ' selected' : '') + '>' + y + '</option>';
+        }).join('');
+
+        var metaLine = '';
+        if (item.category || item.dept || item.src_shop) {
+            var parts = [];
+            if (item.category) parts.push(item.category);
+            if (item.dept) parts.push(item.dept);
+            if (item.src_shop) parts.push('🏪 ' + item.src_shop);
+            metaLine = parts.join(' · ');
+        }
+
+        var systemLine = '';
+        if (item.system_qty > 0) {
+            var diff = item.qty - item.system_qty;
+            var color = diff !== 0 ? 'var(--danger)' : 'var(--text-muted)';
+            systemLine = '<div style="font-size:12px; font-weight:700; color:' + color + '; margin-top:6px;">Система: ' + item.system_qty + (diff !== 0 ? ' (Δ ' + (diff > 0 ? '+' : '') + diff + ')' : '') + '</div>';
+        }
+
+        return '<div style="background:var(--bg-app); padding:12px; border-radius:12px; margin-bottom:8px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">' +
+            '<div style="flex:1;">' +
+            '<div style="font-weight:800; font-size:14px;">' + item.name + '</div>' +
+            (metaLine ? '<div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">' + metaLine + '</div>' : '') +
+            '<div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:2px;">Код: ' + item.code + '</div>' +
+            '</div>' +
+            '<button onclick="removeDirectorScanItem(\'' + item.id + '\')" style="background:none; border:none; color:var(--danger); font-size:22px; line-height:1; padding:0;">&times;</button>' +
+            '</div>' +
+            '<div style="display:flex; gap:8px; margin-top:8px;">' +
+            '<select class="input-field" style="padding:8px; font-size:13px;" onchange="updateDirectorScanItem(\'' + item.id + '\', \'size\', this.value)">' + sizeOptsHtml + '</select>' +
+            '<select class="input-field" style="padding:8px; font-size:13px;" onchange="updateDirectorScanItem(\'' + item.id + '\', \'year\', this.value)">' + yearOptsHtml + '</select>' +
+            '</div>' +
+            '<div class="qty-control" style="margin-top:8px; width:100%;">' +
+            '<button class="qty-btn" onclick="changeDirectorScanQty(\'' + item.id + '\', -1)">-</button>' +
+            '<input type="number" class="qty-input" value="' + item.qty + '" readonly>' +
+            '<button class="qty-btn" onclick="changeDirectorScanQty(\'' + item.id + '\', 1)">+</button>' +
+            '</div>' +
+            systemLine +
+            '</div>';
+    }).join('');
+
+    var summary2 = document.getElementById('director-scan-summary');
+    if (summary2) summary2.style.display = 'flex';
+    updateDirectorSummary();
+};
+
+function updateDirectorSummary() {
+    var totalQty = directorScanList.reduce(function(s, i) { return s + i.qty; }, 0);
+    var tp = document.getElementById('director-total-positions');
+    if (tp) tp.innerText = directorScanList.length;
+    var tq = document.getElementById('director-total-qty');
+    if (tq) tq.innerText = totalQty;
+}
+
+window.changeDirectorScanQty = function(id, delta) {
+    for (var i = 0; i < directorScanList.length; i++) {
+        if (directorScanList[i].id === id) {
+            directorScanList[i].qty = Math.max(1, directorScanList[i].qty + delta);
+            break;
+        }
+    }
+    persistDirectorDraft();
+    renderDirectorScanList();
+};
+
+window.updateDirectorScanItem = function(id, field, value) {
+    if (field !== 'size' && field !== 'year') return;
+    for (var i = 0; i < directorScanList.length; i++) {
+        if (directorScanList[i].id === id) {
+            directorScanList[i][field] = value;
+            break;
+        }
+    }
+    persistDirectorDraft();
+    updateDirectorSummary();
+};
+
+window.removeDirectorScanItem = function(id) {
+    directorScanList = directorScanList.filter(function(i) { return i.id !== id; });
+    persistDirectorDraft();
+    renderDirectorScanList();
+};
+
+window.clearDirectorDraft = function() {
+    if (directorScanList.length === 0) return showToast('Список уже пуст', 'success');
+    showCustomConfirm('Очистить экран?', 'Все отсканированные позиции будут удалены.', function() {
+        directorScanList = [];
+        persistDirectorDraft();
+        renderDirectorScanList();
+        showToast('Экран очищен', 'success');
+    });
+};
+
+(function initGlobalScannerListener() {
+    var scanBuffer = '';
+    var lastKeyTime = 0;
+    var SCAN_TIMEOUT = 300;
+    var MIN_CODE_LENGTH = 3;
+
+    var sellerBuffer = '';
+    var sellerTimer = null;
+
+    document.addEventListener('keydown', function(e) {
+        initAudio();
+
+        var camModal = document.getElementById('camera-scanner-modal');
+        var editModal = document.getElementById('edit-modal');
+        var confirmModal = document.getElementById('custom-confirm-modal');
+        if ((camModal && camModal.classList.contains('open')) ||
+            (editModal && editModal.classList.contains('open')) ||
+            (confirmModal && confirmModal.classList.contains('open'))) {
+            return;
+        }
+
+        var tag = (e.target.tagName || '').toUpperCase();
+        var inputType = (e.target.type || '').toLowerCase();
+        var isRealInput = (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') &&
+                          ['checkbox','radio','file','submit','button','range','date','datetime-local','month','week','time','color'].indexOf(inputType) === -1;
+
+        var onDirector = document.getElementById('screen-director') &&
+                         document.getElementById('screen-director').classList.contains('active');
+        var onSeller = document.getElementById('screen-seller') &&
+                       document.getElementById('screen-seller').classList.contains('active');
+
+        if (onSeller && !onDirector) {
+            var now = Date.now();
+            var isScannerSpeed = (now - lastKeyTime) < 50; 
+            lastKeyTime = now;
+
+            if (e.key === 'Enter' || e.key === '\n' || e.key === '\r') {
+                if (sellerBuffer.length >= 3) {
+                    processScan(sellerBuffer);
+                    sellerBuffer = '';
+                    e.preventDefault();
+                }
+                clearTimeout(sellerTimer);
+                return;
+            }
+
+            if (e.key.length === 1 && e.key !== ' ') {
+                if (isRealInput && !isScannerSpeed && sellerBuffer.length === 0) {
+                    return;
+                }
+                
+                sellerBuffer += e.key;
+                e.preventDefault(); 
+                clearTimeout(sellerTimer);
+                sellerTimer = setTimeout(function() {
+                    if (sellerBuffer.length >= 3) {
+                        processScan(sellerBuffer);
+                    }
+                    sellerBuffer = '';
+                }, 120);
+            }
+            return;
+        }
+
+        if (onDirector) {
+            var nowDir = Date.now();
+            if (nowDir - lastKeyTime > SCAN_TIMEOUT) scanBuffer = '';
+            lastKeyTime = nowDir;
+
+            if (e.key === 'Enter' || e.key === '\n' || e.key === '\r') {
+                var code = scanBuffer.trim();
+                scanBuffer = '';
+                if (code.length >= MIN_CODE_LENGTH) {
+                    addScannedCodeToDirectorList(code);
+                }
+                return;
+            }
+            if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                if (isRealInput) return;
+                scanBuffer += e.key;
+            }
+        }
+    }, true);
+
+    document.addEventListener('click', function() {
+        sellerBuffer = '';
+        scanBuffer = '';
+    });
+})();
+
+function onScanSuccess(decodedText) {
+    var now = Date.now();
+    if (decodedText === lastScannedCode && (now - lastScanTime) < SCAN_COOLDOWN) return;
+    lastScannedCode = decodedText;
+    lastScanTime = now;
+
+    var badge = document.getElementById('scan-last-result');
+    if (badge) badge.innerHTML = '<span class="scan-result-badge">✅ ' + decodedText + '</span>';
+
+    if (currentScannerTarget === 'director') {
+        addScannedCodeToDirectorList(decodedText);
+    } else {
+        processScan(decodedText);
+    }
+
+    if (navigator.vibrate) {
+        try { navigator.vibrate(100); } catch(_) {}
+    }
+}
+
+window.openCameraScanner = function(target) {
+    currentScannerTarget = target || 'director';
+    var modal = document.getElementById('camera-scanner-modal');
+    if (!modal) return;
+
+    var badge = document.getElementById('scan-last-result');
+    if (badge) badge.innerHTML = '';
+    lastScannedCode = '';
+    lastScanTime = 0;
+
+    if (html5QrCode) { try { html5QrCode.stop(); } catch(_) {} html5QrCode = null; }
+
+    modal.classList.add('open');
+    
+    var switchBtn = document.getElementById('btn-switch-camera');
+    if (switchBtn) switchBtn.style.display = 'block';
+
+    setTimeout(function() { startQrScanner(); }, 300);
+};
+
+function startQrScanner() {
+    if (html5QrCode) {
+        try { html5QrCode.stop(); } catch(_) {}
+        html5QrCode = null;
+    }
+
+    if (typeof Html5Qrcode === 'undefined') {
+        var waited = 0;
+        var waitTimer = setInterval(function() {
+            waited += 200;
+            if (typeof Html5Qrcode !== 'undefined') {
+                clearInterval(waitTimer);
+                initHtml5QrCode();
+            } else if (waited > 5000) {
+                clearInterval(waitTimer);
+                showToast('Не удалось загрузить библиотеку сканера', 'error');
+                closeCameraScanner();
+            }
+        }, 200);
+    } else {
+        initHtml5QrCode();
+    }
+}
+
+function initHtml5QrCode() {
+    var readerEl = document.getElementById('qr-reader');
+    if (!readerEl) return;
+    readerEl.innerHTML = '';
+    html5QrCode = new Html5Qrcode("qr-reader");
+
+    var config = {
+        fps: 10,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+            var minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            var qrboxSize = Math.floor(minEdge * 0.7);
+            return { width: qrboxSize, height: qrboxSize };
+        },
+        aspectRatio: 1.0,
+        disableFlip: false,
+        videoConstraints: { facingMode: "environment" }
+    };
+
+    var constraints = currentCameraId ? { deviceId: { exact: currentCameraId } } : { facingMode: "environment" };
+
+    html5QrCode.start(
+        constraints,
+        config,
+        onScanSuccess,
+        function() {}
+    ).then(function() {
+        cameraIsRunning = true;
+    }).catch(function(err) {
+        console.error('❌ Camera start error:', err);
+        cameraIsRunning = false;
+        tryAlternativeCamera();
+    });
+}
+
+function tryAlternativeCamera() {
+    if (!html5QrCode) return;
+    if (typeof Html5Qrcode.getCameras !== 'function') {
+        showToast('Не удалось запустить камеру', 'error');
+        closeCameraScanner();
+        return;
+    }
+    Html5Qrcode.getCameras().then(function(devices) {
+        if (devices && devices.length > 0) {
+            var cameraId = devices[0].id;
+            currentCameraId = cameraId;
+            html5QrCode.start(
+                cameraId,
+                { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+                onScanSuccess,
+                function() {}
+            ).then(function() {
+                cameraIsRunning = true;
+            }).catch(function(err2) {
+                console.error('❌ Fallback camera error:', err2);
+                showToast('Не удалось запустить камеру', 'error');
+                closeCameraScanner();
+            });
+        } else {
+            showToast('Камеры не найдены', 'error');
+            closeCameraScanner();
+        }
+    }).catch(function(err) {
+        console.error('getCameras error:', err);
+        showToast('Ошибка доступа к камере', 'error');
+        closeCameraScanner();
+    });
+}
+
+window.switchCamera = function() {
+    if (!html5QrCode) return;
+    
+    showToast('Переключение камеры...', 'default');
+    
+    Html5Qrcode.getCameras().then(function(devices) {
+        if (!devices || devices.length === 0) {
+            showToast('Камеры не найдены', 'error');
+            return;
+        }
+        
+        var currentIndex = devices.findIndex(d => d.id === currentCameraId);
+        var nextIndex = (currentIndex + 1) % devices.length;
+        currentCameraId = devices[nextIndex].id;
+        
+        if (html5QrCode) {
+            html5QrCode.stop().then(() => {
+                html5QrCode.clear();
+                initHtml5QrCode();
+            }).catch(err => {
+                console.error('Switch camera error:', err);
+                initHtml5QrCode();
+            });
+        }
+    }).catch(err => {
+        console.error('getCameras error:', err);
+        showToast('Ошибка при переключении', 'error');
+    });
+};
+
+window.closeCameraScanner = function() {
+    var modal = document.getElementById('camera-scanner-modal');
+    if (modal) modal.classList.remove('open');
+
+    if (html5QrCode && cameraIsRunning) {
+        html5QrCode.stop().then(function() {
+            cameraIsRunning = false;
+            html5QrCode = null;
+            var readerEl = document.getElementById('qr-reader');
+            if (readerEl) readerEl.innerHTML = '';
+        }).catch(function(err) {
+            console.error('Stop error:', err);
+            cameraIsRunning = false;
+            html5QrCode = null;
+        });
+    } else {
+        html5QrCode = null;
+        var readerEl2 = document.getElementById('qr-reader');
+        if (readerEl2) readerEl2.innerHTML = '';
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('camera-scanner-modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeCameraScanner();
+        });
+    }
+});
+
+window.loadDirectorOrders = async function() {
+    if (!window.fbDB) return;
+    try {
+        var snapshot = await window.fbFns.getDocs(window.fbFns.collection(window.fbDB, "orders"));
+        var orders = [];
+        snapshot.forEach(function(d) { orders.push(Object.assign({id: d.id}, d.data())); });
+        var el = document.getElementById('director-orders-list');
+        if (el) el.innerHTML = orders.length ? orders.map(function(o) { return renderOrderCard(o, true); }).join('') : getEmptyStateHTML('Здесь пока пусто', 'Заказов нет', 'box');
+    } catch(e) { console.log(e); }
+};
+
+window.directorDeleteOrder = async function(orderId) {
+    if (!window.fbDB) return;
+    showCustomConfirm('Удалить заказ?', 'Это действие нельзя будет отменить.', async function() {
+        try {
+            await window.fbFns.deleteDoc(window.fbFns.doc(window.fbDB, "orders", orderId));
+            showToast('Заказ удалён', 'success');
+            window.loadDirectorOrders();
+        } catch(e) { showToast('Ошибка удаления', 'error'); }
+    });
+};
+
+window.directorEditOrder = async function(orderId) {
+    if (!window.fbDB) return;
+    try {
+        var docSnap = await window.fbFns.getDoc(window.fbFns.doc(window.fbDB, "orders", orderId));
+        if (!docSnap.exists()) return showToast('Заказ не найден', 'error');
+        var order = Object.assign({id: docSnap.id}, docSnap.data());
+        document.getElementById('edit-item-id').value = orderId;
+        document.getElementById('edit-item-type').value = 'order';
+        document.getElementById('edit-size').value = order.size || '';
+        document.getElementById('edit-year').value = '';
+        document.getElementById('edit-qty').value = 1;
+        document.getElementById('edit-year').disabled = true;
+        document.getElementById('edit-qty').disabled = true;
+        document.getElementById('edit-modal').classList.add('open');
+    } catch(e) {
+        console.error(e);
+        showToast('Ошибка загрузки заказа', 'error');
+    }
+};
+
+window.directorDeleteCatalog = async function(itemId) {
+    if (!window.fbDB) return;
+    showCustomConfirm('Удалить товар?', 'Товар будет удален с витрины безвозвратно.', async function() {
+        try {
+            await window.fbFns.deleteDoc(window.fbFns.doc(window.fbDB, "catalog", itemId));
+            showToast('Товар удалён', 'success');
+            catalogCache = null;
+            window.loadCatalog(true, true);
+        } catch(e) { showToast('Ошибка удаления', 'error'); }
+    });
+};
+
+window.directorEditCatalog = async function(itemId) {
+    if (!window.fbDB) return;
+    try {
+        var docSnap = await window.fbFns.getDoc(window.fbFns.doc(window.fbDB, "catalog", itemId));
+        if (!docSnap.exists()) return showToast('Товар не найден', 'error');
+        var item = Object.assign({id: docSnap.id}, docSnap.data());
+        document.getElementById('edit-item-id').value = itemId;
+        document.getElementById('edit-item-type').value = 'catalog';
+        document.getElementById('edit-size').value = item.size || '';
+        document.getElementById('edit-year').value = item.year || '';
+        document.getElementById('edit-qty').value = item.qty || 1;
+        document.getElementById('edit-year').disabled = false;
+        document.getElementById('edit-qty').disabled = false;
+        document.getElementById('edit-modal').classList.add('open');
+    } catch(e) {
+        console.error(e);
+        showToast('Ошибка загрузки товара', 'error');
+    }
+};
+
+window.closeEditModal = function() {
+    document.getElementById('edit-modal').classList.remove('open');
+    document.getElementById('edit-year').disabled = false;
+    document.getElementById('edit-qty').disabled = false;
+};
+
+window.saveEditItem = async function() {
+    if (!window.fbDB) return showToast('Нет связи', 'error');
+    var id = document.getElementById('edit-item-id').value;
+    var type = document.getElementById('edit-item-type').value;
+    var size = document.getElementById('edit-size').value.trim();
+    var yearRaw = document.getElementById('edit-year').value.trim();
+    var qty = parseInt(document.getElementById('edit-qty').value) || 1;
+
+    try {
+        if (type === 'catalog') {
+            var updateData = { size: size || 'Без размера', qty: qty };
+            if (yearRaw) updateData.year = yearRaw;
+            await window.fbFns.updateDoc(window.fbFns.doc(window.fbDB, "catalog", id), updateData);
+            showToast('Товар обновлён', 'success');
+            catalogCache = null;
+            window.loadCatalog(true, true);
+        } else {
+            await window.fbFns.updateDoc(window.fbFns.doc(window.fbDB, "orders", id), { size: size || 'Без размера' });
+            showToast('Заказ обновлён', 'success');
+            window.loadDirectorOrders();
+        }
+        closeEditModal();
+    } catch(e) {
+        console.error(e);
+        showToast('Ошибка сохранения', 'error');
+    }
+};
+
+var revisionsCache = [];
+var directorRevisionFilter = 'all';
+
+function csvEscape(v) {
+    var s = String(v == null ? '' : v);
+    if (/[";\n\r]/.test(s)) {
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+    return s;
+}
+
+window.downloadRevisionExcel = function(revId) {
+    var rev = null;
+    for (var i = 0; i < revisionsCache.length; i++) {
+        if (revisionsCache[i].id === revId) { rev = revisionsCache[i]; break; }
+    }
+    if (!rev) return showToast('Ревизия не найдена', 'error');
+
+    var csv = "\uFEFF";
+    csv += "Владелец (полный);Категория товара (из ШК);Категория ревизии;Штрих-код;Размер;Год;Факт;Система;Расхождение;Статус\n";
+
+    var items = Array.isArray(rev.items) ? rev.items : [];
+    items.forEach(function(i) {
+        var fullName = i.name || '';
+        var productCat = i.productCat || extractCategory(fullName);
+        var revCat = i.revCat || rev.revCategory || '';
+        var sysQty = (i.system_qty || 0);
+        var sysStr = sysQty > 0 ? sysQty : '';
+        var diff = sysQty > 0 ? (i.qty - sysQty) : '';
+        var st = i.categoryStatus || 'match';
+        var stLabel = st === 'mismatch' ? 'ОШИБКА' : (st === 'close' ? 'ПОХОЖЕ' : 'OK');
+
+        var row = [
+            fullName, productCat, revCat, i.code || '',
+            i.size || '', i.year || '', i.qty || 0, sysStr, diff, stLabel
+        ];
+        csv += row.map(csvEscape).join(';') + '\n';
+    });
+
+    var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    var link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    var dateStr = rev.date ? new Date(rev.date).toISOString().slice(0, 10) : 'date';
+    link.download = 'reviziya_' + (rev.shop || 'shop') + '_' + dateStr + '.csv';
+    link.click();
+};
+
+function renderRevisionCard(r) {
+    var dateStr = r.date ? new Date(r.date).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+    var items = Array.isArray(r.items) ? r.items : [];
+    var totalPos = (r.totalPositions != null) ? r.totalPositions : items.length;
+    var totalQty = (r.totalQty != null) ? r.totalQty : items.reduce(function(s, i) { return s + (Number(i.qty) || 0); }, 0);
+    var totalDiff = (r.totalDiff != null) ? r.totalDiff : items.reduce(function(s, i) {
+        return s + ((Number(i.system_qty) || 0) > 0 ? ((Number(i.qty) || 0) - Number(i.system_qty)) : 0);
+    }, 0);
+    var errorCount = items.filter(function(i) { return i.categoryStatus === 'mismatch'; }).length;
+    var warnCount = items.filter(function(i) { return i.categoryStatus === 'close'; }).length;
+
+    var diffColor = totalDiff !== 0 ? 'var(--danger)' : 'var(--text-muted)';
+    var diffStr = (totalDiff > 0 ? '+' : '') + totalDiff;
+    if (errorCount > 0) {
+        diffStr = '🔴 ' + errorCount + (warnCount > 0 ? ' / 🟡 ' + warnCount : '') + ' ошиб.';
+        diffColor = 'var(--danger)';
+    } else if (warnCount > 0) {
+        diffStr = '🟡 ' + warnCount + ' предупр.';
+        diffColor = 'var(--warn)';
+    }
+
+    var shopTitle = r.shop || '—';
+    var catTitle = (r.revCategory && r.revCategory.trim()) ? r.revCategory : 'Без категории';
+    var sellerTitle = r.seller || '—';
+    
+    var statsLine = totalQty + ' шт.' + (totalDiff !== 0 ? ' · <span style="color:' + diffColor + ';font-weight:800;">Δ ' + diffStr + '</span>' : '');
+
+    var itemsHtml = items.map(function(i) {
+        var sys = (Number(i.system_qty) || 0) > 0 ? ' · Система: ' + i.system_qty : '';
+        var cat = i.category ? ' · ' + i.category : '';
+        var dept = i.dept ? ' · ' + i.dept : '';
+        var st = i.categoryStatus || 'match';
+        var mark = '';
+        var cls = '';
+        if (st === 'mismatch') {
+            mark = ' <span style="color:var(--danger); font-weight:900;">🔴 ' + (i.productCat || '') + ' ≠ ' + (i.revCat || '') + '</span>';
+            cls = 'rev-item-error';
+        } else if (st === 'close') {
+            mark = ' <span style="color:var(--warn); font-weight:900;">🟡 ' + (i.productCat || '') + ' / ' + (i.revCat || '') + '</span>';
+            cls = 'rev-item-warn';
+        }
+        return '<div class="rev-item ' + cls + '">' +
+            '<span>' + (i.name || ('Товар ' + i.code)) + ' · ' + (i.size || '') + ' / ' + (i.year || '') + cat + dept + sys + mark + '</span>' +
+            '<strong>' + (i.qty || 0) + ' шт.</strong>' +
+            '</div>';
+    }).join('');
+
+    return '<div class="rev-card" data-rev-id="' + r.id + '">' +
+        '<div class="rev-header" onclick="toggleDetails(\'' + r.id + '\')">' +
+        '<div>' +
+        '<div class="rev-title">🏪 ' + shopTitle + ' · ' + catTitle + ' · ' + sellerTitle + '</div>' +
+        '<div class="rev-meta">' + dateStr + ' · ' + statsLine + '</div>' +
+        '</div>' +
+        '<div style="font-size:20px; color:var(--text-muted);">▾</div>' +
+        '</div>' +
+        '<div class="rev-details" id="rev-details-' + r.id + '">' +
+        itemsHtml +
+        '<div style="display:flex; gap:8px; margin-top:12px;">' +
+        '<button class="btn-edit" style="flex:1; padding:10px;" onclick="downloadRevisionExcel(\'' + r.id + '\'); event.stopPropagation();">📥 В Excel</button>' +
+        '<button class="btn-del" style="flex:1; padding:10px;" onclick="deleteRevision(\'' + r.id + '\'); event.stopPropagation();">🗑 Удалить</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+}
+
+function renderRevisionsList() {
+    var sellerEl = document.getElementById('seller-revisions-list');
+    if (sellerEl) {
+        var sellerList = revisionsCache.filter(function(r) { return r.shop === shop; });
+        sellerList.sort((a, b) => new Date(b.date) - new Date(a.date)); 
+        
+        if (sellerList.length === 0) {
+            sellerEl.innerHTML = getEmptyStateHTML('Нет ревизий', 'Сохранённых ревизий пока нет', 'box');
+        } else {
+            sellerEl.innerHTML = sellerList.map(renderRevisionCard).join('');
+        }
+    }
+
+    var directorEl = document.getElementById('director-revisions-list');
+    if (directorEl) {
+        var list = revisionsCache.slice();
+        if (directorRevisionFilter !== 'all') {
+            list = list.filter(function(r) { return r.shop === directorRevisionFilter; });
+        }
+        list.sort((a, b) => new Date(b.date) - new Date(a.date)); 
+        
+        if (list.length === 0) {
+            directorEl.innerHTML = getEmptyStateHTML('Нет ревизий', 'Ревизий пока нет', 'box');
+        } else {
+            directorEl.innerHTML = list.map(renderRevisionCard).join('');
+        }
+    }
+}
+
+window.toggleDetails = function(id) {
+    var el = document.getElementById('rev-details-' + id);
+    if (!el) return;
+    el.classList.toggle('open');
+};
+
+window.toggleDirectorRevisionFilter = function(type) {
+    directorRevisionFilter = type;
+    var ids = {
+        'all': 'dir-rev-filter-all',
+        'Алик': 'dir-rev-filter-alik',
+        'Мода': 'dir-rev-filter-moda',
+        'Твой стиль': 'dir-rev-filter-style',
+    };
+    var btns = document.querySelectorAll('[id^="dir-rev-filter-"]');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    var target = document.getElementById(ids[type]);
+    if (target) target.classList.add('active');
+    renderRevisionsList();
+};
+
+window.deleteRevision = async function(id) {
+    showCustomConfirm('Удалить ревизию?', 'Это действие нельзя будет отменить.', async function() {
+        if (!navigator.onLine) return showToast('Нет сети', 'error');
+        if (!window.fbDB) return showToast('Нет связи с базой', 'error');
+        try {
+            await window.fbFns.deleteDoc(window.fbFns.doc(window.fbDB, 'revisions', id));
+            showToast('Удалено', 'success');
+            loadRevisions();
+        } catch (e) {
+            console.error(e);
+            showToast('Ошибка удаления', 'error');
+        }
+    });
+};
+
+window.loadRevisions = async function() {
+    var cacheKey = shop ? ('revisions_cache_' + shop) : 'revisions_cache_all';
+
+    if (!navigator.onLine || !window.fbDB) {
+        try {
+            var cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                revisionsCache = JSON.parse(cached) || [];
+                renderRevisionsList();
+            } else {
+                var cachedAll = localStorage.getItem('revisions_cache_all');
+                if (cachedAll) {
+                    revisionsCache = JSON.parse(cachedAll) || [];
+                    renderRevisionsList();
+                }
+            }
+        } catch(_) {}
+        return;
+    }
+
+    try {
+        var snapshot;
+        if (directorMode) {
+            snapshot = await window.fbFns.getDocs(window.fbFns.collection(window.fbDB, 'revisions'));
+        } else if (shop) {
+            var q = window.fbFns.query(
+                window.fbFns.collection(window.fbDB, 'revisions'),
+                window.fbFns.where('shop', '==', shop)
+            );
+            snapshot = await window.fbFns.getDocs(q);
+        } else {
+            return;
+        }
+        var revs = [];
+        snapshot.forEach(function(d) { revs.push(Object.assign({id: d.id}, d.data())); });
+        revisionsCache = revs;
+
+        try {
+            if (directorMode) {
+                localStorage.setItem('revisions_cache_all', JSON.stringify(revs));
+            }
+            if (shop) {
+                localStorage.setItem('revisions_cache_' + shop, JSON.stringify(revs.filter(function(r) { return r.shop === shop; })));
+            }
+        } catch(_) {}
+
+        renderRevisionsList();
+    } catch (e) {
+        console.error('loadRevisions', e);
+        try {
+            var cached2 = localStorage.getItem(cacheKey);
+            if (cached2) {
+                revisionsCache = JSON.parse(cached2) || [];
+                renderRevisionsList();
+            }
+        } catch(_) {}
+    }
+};
+
+function initApp() {
+    try {
+        var sellerInput = document.getElementById('seller-name');
+        if (sellerInput) sellerInput.value = seller;
+
+        var currentYear = new Date().getFullYear();
+        var yearOptions = '<option value="Без года">Без года</option>';
+        for (var y = currentYear; y >= currentYear - 5; y--) {
+            yearOptions += '<option value="' + y + '">' + y + '</option>';
+        }
+        var yearSelect = document.getElementById('cat-year');
+        if (yearSelect) yearSelect.innerHTML = yearOptions;
+
+        if (shop && seller && !directorMode) {
+            var titleEl = document.getElementById('shop-title');
+            if (titleEl) titleEl.innerText = 'Магазин · ' + shop;
+            scanList = loadDraft();
+            if (!Array.isArray(scanList)) scanList = [];
+            showScreen('screen-seller');
+            renderScanList();
+            loadBarcodes();
+            loadRevisions();
+            updateOnlineStatus();
+        } else {
+            showScreen('screen-auth');
+        }
+
+        var orderCat = document.getElementById('order-category');
+        if (orderCat) orderCat.addEventListener('change', function() {
+            var customInp = document.getElementById('new-category-input');
+            if (!customInp) return;
+            if (this.value === 'custom_add') { customInp.style.display = 'block'; }
+            else { customInp.style.display = 'none'; customInp.value = ''; }
+            validateOrderForm();
+        });
+
+        var newCatInp = document.getElementById('new-category-input');
+        if (newCatInp) newCatInp.addEventListener('input', validateOrderForm);
+
+        var catCat = document.getElementById('cat-category');
+        if (catCat) catCat.addEventListener('change', function() {
+            var customInp = document.getElementById('new-cat-category-input');
+            if (!customInp) return;
+            if (this.value === 'custom_add') { customInp.style.display = 'block'; }
+            else { customInp.style.display = 'none'; customInp.value = ''; }
+            validateCatalogForm();
+        });
+
+        var newCatCatInp = document.getElementById('new-cat-category-input');
+        if (newCatCatInp) newCatCatInp.addEventListener('input', validateCatalogForm);
+
+        var orderSize = document.getElementById('order-size');
+        if (orderSize) orderSize.addEventListener('change', function() {
+            var customInp = document.getElementById('custom-size-input');
+            if (!customInp) return;
+            if (this.value === 'custom_add') { customInp.style.display = 'block'; }
+            else { customInp.style.display = 'none'; customInp.value = ''; }
+        });
+
+        var catSize = document.getElementById('cat-size');
+        if (catSize) catSize.addEventListener('change', function() {
+            var customInp = document.getElementById('custom-cat-size-input');
+            if (!customInp) return;
+            if (this.value === 'custom_add') { customInp.style.display = 'block'; }
+            else { customInp.style.display = 'none'; customInp.value = ''; }
+        });
+
+        validateOrderForm();
+        validateCatalogForm();
+        renderPendingScanPreview();
+        renderDirectorScanList();
+        updateOnlineStatus();
+        console.log('✅ Init complete, shop=' + shop + ', seller=' + seller);
+    } catch(e) {
+        console.error('Init error:', e);
+        var banner = document.getElementById('js-error-banner');
+        if (banner) {
+            banner.style.display = 'block';
+            banner.textContent = '⚠️ Init error: ' + e.message;
+        }
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+</script>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+</body>
+</html>
