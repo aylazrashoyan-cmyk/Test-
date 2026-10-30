@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -11,7 +11,7 @@
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 8px; }
     h1 { font-size: 1.3rem; }
     h2 { font-size: 1.4rem; margin-bottom: 20px; text-align: center; }
-    .stats { display: flex; gap: 16px; font-size: 0.9rem; color: #4a5568; }
+    .stats { display: flex; gap: 16px; font-size: 0.9rem; color: #4a5568; flex-wrap: wrap; }
     .screen { display: none; flex: 1; flex-direction: column; }
     .screen.active { display: flex; }
     .modes { display: flex; flex-direction: column; gap: 12px; }
@@ -36,6 +36,7 @@
     .link-btn { background: none; border: none; color: #667eea; cursor: pointer; font-size: 0.9rem; padding: 8px; font-family: inherit; text-decoration: underline; }
     #result { text-align: center; justify-content: center; }
     #result-text { margin: 16px 0 24px; font-size: 1.1rem; color: #4a5568; }
+    .badge { font-size: 0.8rem; background: #ffeaa7; padding: 2px 8px; border-radius: 10px; color: #d63031; font-weight: bold; }
     @media (max-width: 400px) { .app { padding: 20px; } #question { font-size: 1.5rem; } .answer-btn { font-size: 1.1rem; padding: 14px; } }
   </style>
 </head>
@@ -46,6 +47,7 @@
       <div class="stats">
         <span>⭐ Очки: <b id="score">0</b></span>
         <span>🔥 Серия: <b id="streak">0</b></span>
+        <span>📈 Уровень: <b id="level">1</b></span>
       </div>
     </header>
 
@@ -89,26 +91,42 @@
   </div>
 
   <script>
-    const state = { score: 0, streak: 0, mode: null, questionNum: 0, totalQuestions: 10, correctInRound: 0, currentAnswer: null };
+    const state = { 
+      score: 0, 
+      streak: 0, 
+      level: 1, 
+      mode: null, 
+      questionNum: 0, 
+      correctInRound: 0, 
+      currentAnswer: null,
+      isBonus: false
+    };
     const QUESTIONS_PER_ROUND = 10;
 
+    // Загрузка прогресса
     function loadProgress() {
       const saved = localStorage.getItem('math3-progress');
       if (saved) {
         const data = JSON.parse(saved);
         state.score = data.score || 0;
         state.streak = data.streak || 0;
+        state.level = data.level || 1;
       }
       updateStats();
     }
 
     function saveProgress() {
-      localStorage.setItem('math3-progress', JSON.stringify({ score: state.score, streak: state.streak }));
+      localStorage.setItem('math3-progress', JSON.stringify({ 
+        score: state.score, 
+        streak: state.streak,
+        level: state.level 
+      }));
     }
 
     function updateStats() {
       document.getElementById('score').textContent = state.score;
       document.getElementById('streak').textContent = state.streak;
+      document.getElementById('level').textContent = state.level;
     }
 
     function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -117,32 +135,37 @@
     function makeOptions(correct) {
       const opts = new Set([correct]);
       while (opts.size < 4) {
-        let delta = rand(1, 10);
+        let delta = rand(1, 15);
         const candidate = Math.random() > 0.5 ? correct + delta : correct - delta;
         if (candidate > 0) opts.add(candidate);
       }
       return shuffle([...opts]);
     }
 
+    // Генераторы
     function generateMultiply() {
-      const a = rand(2, 9);
-      const b = rand(2, 9);
-      if (Math.random() < 0.4) {
-        return { text: `${a * b} ÷ ${a} = ?`, answer: b };
+      let a, b, text;
+      if (state.level === 1) {
+        a = rand(2, 9); b = rand(2, 9);
+        text = `${a} × ${b} = ?`; 
+        return { text, answer: a * b };
+      } else {
+        a = rand(3, 12); b = rand(3, 12);
+        text = `${a} × ${b} = ?`; 
+        return { text, answer: a * b };
       }
-      return { text: `${a} × ${b} = ?`, answer: a * b };
     }
 
     function generateHundreds() {
-      const isAdd = Math.random() > 0.5;
-      if (isAdd) {
-        const a = rand(100, 800);
-        const b = rand(50, 199);
-        return { text: `${a} + ${b} = ?`, answer: a + b };
+      if (state.level === 1) {
+        const isAdd = Math.random() > 0.5;
+        const a = rand(100, 500); const b = rand(50, 199);
+        return { text: isAdd ? `${a} + ${b} = ?` : `${a} − ${b} = ?`, answer: isAdd ? a + b : a - b };
       } else {
-        const a = rand(200, 999);
-        const b = rand(50, a - 50);
-        return { text: `${a} − ${b} = ?`, answer: a - b };
+        // Уровень 2 и выше: уравнения с пропуском
+        const a = rand(10, 100);
+        const res = a + rand(10, 50);
+        return { text: `? + ${a} = ${res}`, answer: res - a };
       }
     }
 
@@ -156,9 +179,7 @@
       { text: 'Периметр квадрата 36 см. Чему равна сторона?', answer: 9 },
       { text: 'У Маши 18 наклеек, это в 2 раза больше, чем у Оли. Сколько у Оли?', answer: 9 },
       { text: 'Сколько минут в двух с половиной часах?', answer: 150 },
-      { text: 'Один альбом 45 ₽. Сколько сдачи с 200 ₽ за 3 альбома?', answer: 65 },
-      { text: 'За 5 тетрадей заплатили 100 ₽. Сколько стоит одна?', answer: 20 },
-      { text: 'В классе 28 учеников, 3/4 — девочки. Сколько мальчиков?', answer: 7 }
+      { text: 'Один альбом 45 ₽. Сколько сдачи с 200 ₽ за 3 альбома?', answer: 65 }
     ];
 
     function generateLogic() {
@@ -166,6 +187,7 @@
       return { text: task.text, answer: task.answer, options: makeOptions(task.answer) };
     }
 
+    // Игровой цикл
     function startGame(mode) {
       state.mode = mode;
       state.questionNum = 0;
@@ -177,13 +199,27 @@
     function nextQuestion() {
       if (state.questionNum >= QUESTIONS_PER_ROUND) { endGame(); return; }
       state.questionNum++;
+
       let q;
-      if (state.mode === 'multiply') q = generateMultiply();
-      else if (state.mode === 'hundreds') q = generateHundreds();
-      else q = generateLogic();
+      // Бонусная логическая задача: каждая 5-я в режиме счета при серии >= 3
+      if (state.mode !== 'logic' && state.streak > 0 && state.streak % 5 === 0) {
+        q = generateLogic();
+        state.isBonus = true;
+      } else {
+        state.isBonus = false;
+        if (state.mode === 'multiply') q = generateMultiply();
+        else if (state.mode === 'hundreds') q = generateHundreds();
+        else q = generateLogic();
+      }
 
       state.currentAnswer = q.answer;
-      document.getElementById('question').textContent = q.text;
+      
+      let displayText = q.text;
+      if (state.isBonus) {
+        displayText = `<span class="badge">🔥 БОНУС-ЗАДАЧА!</span><br>${q.text}`;
+      }
+      
+      document.getElementById('question').innerHTML = displayText;
       document.getElementById('feedback').textContent = '';
       document.getElementById('feedback').className = 'feedback';
 
@@ -202,33 +238,48 @@
     function checkAnswer(btn, chosen) {
       document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
       const feedback = document.getElementById('feedback');
+      
       if (chosen === state.currentAnswer) {
         btn.classList.add('correct');
         state.score += 10;
         state.streak += 1;
         state.correctInRound++;
-        feedback.textContent = state.streak >= 3 ? `🔥 Отлично! Серия ${state.streak}!` : '✅ Правильно!';
+        
+        // Повышение уровня (адаптивность)
+        if (state.streak % 3 === 0 && state.level < 3) {
+          state.level++;
+          feedback.textContent = `✅ Правильно! Уровень повышен до ${state.level}!`;
+        } else {
+          feedback.textContent = state.streak >= 3 ? `🔥 Отлично! Серия ${state.streak}!` : '✅ Правильно!';
+        }
         feedback.className = 'feedback good';
       } else {
         btn.classList.add('wrong');
         state.streak = 0;
-        feedback.textContent = `❌ Неверно. Правильный ответ: ${state.currentAnswer}`;
+        // Понижение уровня (адаптивность)
+        if (state.level > 1) {
+          state.level--;
+          feedback.textContent = `❌ Неверно. Правильный ответ: ${state.currentAnswer}. Уровень снижен до ${state.level}.`;
+        } else {
+          feedback.textContent = `❌ Неверно. Правильный ответ: ${state.currentAnswer}`;
+        }
         feedback.className = 'feedback bad';
         document.querySelectorAll('.answer-btn').forEach(b => {
           if (Number(b.textContent) === state.currentAnswer) b.classList.add('correct');
         });
       }
+      
       updateStats();
       saveProgress();
-      setTimeout(nextQuestion, 1200);
+      setTimeout(nextQuestion, 1800); // Чуть больше времени на чтение
     }
 
     function endGame() {
       const correct = state.correctInRound;
       let title, text;
-      if (correct >= 9) { title = '🏆 Великолепно!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}!`; }
-      else if (correct >= 7) { title = '🎉 Отлично!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}.`; }
-      else if (correct >= 5) { title = '👍 Хорошо!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}.`; }
+      if (correct >= 9) { title = '🏆 Великолепно!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}! Твой уровень: ${state.level}.`; }
+      else if (correct >= 7) { title = '🎉 Отлично!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}. Уровень: ${state.level}.`; }
+      else if (correct >= 5) { title = '👍 Хорошо!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}. Уровень: ${state.level}.`; }
       else { title = '💪 Не сдавайся!'; text = `Ты решил ${correct} из ${QUESTIONS_PER_ROUND}. Попробуй ещё!`; }
       document.getElementById('result-title').textContent = title;
       document.getElementById('result-text').textContent = text;
@@ -253,6 +304,7 @@
           localStorage.removeItem('math3-progress');
           state.score = 0;
           state.streak = 0;
+          state.level = 1;
           updateStats();
         }
       });
