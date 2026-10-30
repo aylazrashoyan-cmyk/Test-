@@ -619,12 +619,15 @@ input[type="file"]::file-selector-button:active {
         window.fbDB = db;
         window.fbFns = { collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction };
         console.log('✅ Firebase ready');
+    
+    // Ставим флаг, что база готова
+    window.fbReady = true;
 
-        try {
-            if (typeof shop !== 'undefined' && shop && seller) {
-                if (typeof window.loadMyOrders === 'function') window.loadMyOrders();
-                if (typeof window.loadCatalog === 'function') window.loadCatalog(false, true);
-            }
+    // Если пользователь уже вошел, пока грузилась база — загружаем данные
+    if (typeof shop !== 'undefined' && shop && typeof seller !== 'undefined' && seller) {
+        if (typeof window.loadMyOrders === 'function') window.loadMyOrders();
+        if (typeof window.loadCatalog === 'function') window.loadCatalog(false, true);
+    }
             if (typeof directorMode !== 'undefined' && directorMode) {
                 if (typeof window.loadDirectorOrders === 'function') window.loadDirectorOrders();
                 if (typeof window.loadRevisions === 'function') window.loadRevisions();
@@ -651,6 +654,7 @@ input[type="file"]::file-selector-button:active {
 </script>
 
 <script>
+window.fbReady = false; // Флаг: база готова (защита от гонки при загрузке)    
 var shop = '';
 var seller = '';
 try { shop = localStorage.getItem('ord_shop') || ''; } catch(e) {}
@@ -843,18 +847,19 @@ window.showScreen = function(id) {
     var el = document.getElementById(id);
     if (el) el.classList.add('active');
 
-    if (id === 'screen-seller' && window.fbDB) {
-        try { if (window.loadMyOrders) window.loadMyOrders(); } catch(e) {}
-        try { if (window.loadCatalog) window.loadCatalog(false, true); } catch(e) {}
+    if (id === 'screen-seller') {
+        if (window.fbReady) {
+            try { if (window.loadMyOrders) window.loadMyOrders(); } catch(e) {}
+            try { if (window.loadCatalog) window.loadCatalog(false, true); } catch(e) {}
+        }
+if (id === 'screen-director') {
+        if (window.fbReady) {
+            try { if (window.loadDirectorOrders) window.loadDirectorOrders(); } catch(e) {}
+            try { if (window.loadCatalog) window.loadCatalog(true, true); } catch(e) {}
+            try { if (window.loadRevisions) window.loadRevisions(); } catch(e) {}
+            renderDirectorScanList();
+        }
     }
-
-    if (id === 'screen-director' && window.fbDB) {
-        try { if (window.loadDirectorOrders) window.loadDirectorOrders(); } catch(e) {}
-        try { if (window.loadCatalog) window.loadCatalog(true, true); } catch(e) {}
-        try { if (window.loadRevisions) window.loadRevisions(); } catch(e) {}
-        renderDirectorScanList();
-    }
-};
 
 window.selectShop = function(el, name) {
     try {
