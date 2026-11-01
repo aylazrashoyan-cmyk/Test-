@@ -1279,6 +1279,101 @@ window.loadMyOrders = async function() {
         return;
     }
 
+    ordersInPage = 20;
+    ordersOutPage = 20;
+
+    var inEl = document.getElementById('orders-incoming-list');
+    var outEl = document.getElementById('orders-outgoing-list');
+    
+    if (inEl) inEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div><div class="skeleton-line" style="width:60%;"></div></div>';
+    if (outEl) outEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div><div class="skeleton-line" style="width:60%;"></div></div>';
+
+    await Promise.all([
+        loadIncomingOrders(ordersInPage, true),
+        loadOutgoingOrders(ordersOutPage, true)
+    ]);
+};
+
+async function loadIncomingOrders(limitCount, isFirstLoad) {
+    var inEl = document.getElementById('orders-incoming-list');
+    if (!inEl) return;
+
+    try {
+        var q = window.fbFns.query(
+            window.fbFns.collection(window.fbDB, "orders"),
+            window.fbFns.where("toShop", "==", shop),
+            window.fbFns.orderBy("date", "desc"),
+            window.fbFns.limit(limitCount)
+        );
+        var snap = await window.fbFns.getDocs(q);
+        var arr = [];
+        snap.forEach(function(d) { arr.push(Object.assign({id: d.id}, d.data())); });
+
+        var html = arr.map(function(o) { return renderOrderCard(o); }).join('');
+        
+        if (arr.length === limitCount) {
+            html += '<button class="btn-edit" style="width:100%; padding:16px; margin-top:12px; background:var(--bg-card); border:1px solid #E5E5EA;" onclick="loadMoreIncoming()">Показать еще 20</button>';
+        }
+
+        if (isFirstLoad && arr.length === 0) {
+            inEl.innerHTML = getEmptyStateHTML('Здесь пока пусто', 'Нет входящих запросов', 'box');
+        } else {
+            inEl.innerHTML = html;
+        }
+    } catch(e) {
+        console.log(e);
+        if (isFirstLoad) inEl.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
+        else showToast('Ошибка загрузки', 'error');
+    }
+}
+
+window.loadMoreIncoming = async function() {
+    ordersInPage += 20;
+    var inEl = document.getElementById('orders-incoming-list');
+    if (inEl) inEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div></div>';
+    await loadIncomingOrders(ordersInPage, false);
+};
+
+async function loadOutgoingOrders(limitCount, isFirstLoad) {
+    var outEl = document.getElementById('orders-outgoing-list');
+    if (!outEl) return;
+
+    try {
+        var q = window.fbFns.query(
+            window.fbFns.collection(window.fbDB, "orders"),
+            window.fbFns.where("fromShop", "==", shop),
+            window.fbFns.orderBy("date", "desc"),
+            window.fbFns.limit(limitCount)
+        );
+        var snap = await window.fbFns.getDocs(q);
+        var arr = [];
+        snap.forEach(function(d) { arr.push(Object.assign({id: d.id}, d.data())); });
+
+        var html = arr.map(function(o) { return renderOrderCard(o); }).join('');
+
+        if (arr.length === limitCount) {
+            html += '<button class="btn-edit" style="width:100%; padding:16px; margin-top:12px; background:var(--bg-card); border:1px solid #E5E5EA;" onclick="loadMoreOutgoing()">Показать еще 20</button>';
+        }
+
+        if (isFirstLoad && arr.length === 0) {
+            outEl.innerHTML = getEmptyStateHTML('Здесь пока пусто', 'Нет исходящих запросов', 'box');
+        } else {
+            outEl.innerHTML = html;
+        }
+    } catch(e) {
+        console.log(e);
+        if (isFirstLoad) outEl.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
+        else showToast('Ошибка загрузки', 'error');
+    }
+}
+
+window.loadMoreOutgoing = async function() {
+    ordersOutPage += 20;
+    var outEl = document.getElementById('orders-outgoing-list');
+    if (outEl) outEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div></div>';
+    await loadOutgoingOrders(ordersOutPage, false);
+};
+
     // Сбрасываем счетчики при каждом новом заходе
     ordersInPage = 20;
     ordersOutPage = 20;
