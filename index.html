@@ -622,6 +622,7 @@ input[type="file"]::file-selector-button:active {
             if (typeof shop !== 'undefined' && shop && seller) {
                 if (typeof window.loadMyOrders === 'function') window.loadMyOrders();
                 if (typeof window.loadCatalog === 'function') window.loadCatalog(false, true);
+                if (typeof window.loadRevisions === 'function') window.loadRevisions(true);
             }
             if (typeof directorMode !== 'undefined' && directorMode) {
                 if (typeof window.loadDirectorOrders === 'function') window.loadDirectorOrders();
@@ -844,6 +845,7 @@ window.showScreen = function(id) {
     if (id === 'screen-seller' && window.fbDB) {
         try { if (window.loadMyOrders) window.loadMyOrders(); } catch(e) {}
         try { if (window.loadCatalog) window.loadCatalog(false, true); } catch(e) {}
+        try { if (window.loadRevisions) window.loadRevisions(true); } catch(e) {}
     }
 
     if (id === 'screen-director' && window.fbDB) {
