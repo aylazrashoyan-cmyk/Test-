@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -80,7 +80,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg-app); color: var(-
 .input-field:focus { border-color: var(--primary); background: #FFF; box-shadow: 0 0 0 4px rgba(212, 255, 0, 0.15); }
 select.input-field { appearance: none; -webkit-appearance: none; cursor: pointer; background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23111111%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E"); background-repeat: no-repeat; background-position: right 16px top 50%; background-size: 12px auto; }
 
-/* Стилизация кнопки загрузки фото */
 input[type="file"]::file-selector-button {
     background: var(--bg-card);
     color: var(--text-main);
@@ -181,7 +180,6 @@ input[type="file"]::file-selector-button:active {
 
 .icon { width: 20px; height: 20px; fill: currentColor; vertical-align: middle; }
 
-/* Стили для пустых состояний */
 .empty-state { text-align: center; padding: 30px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .empty-state svg { margin-bottom: 12px; }
 .empty-state-title { font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
@@ -602,7 +600,7 @@ input[type="file"]::file-selector-button:active {
   setTimeout(async () => {
       try {
         const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
-        const { getFirestore, collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const { getFirestore, collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction, orderBy, limit, startAfter } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
 
         const firebaseConfig = {
           apiKey: "AIzaSyBXcymeTjA6zuCPM_ESuKEzVeyc-5YUqBU",
@@ -617,7 +615,7 @@ input[type="file"]::file-selector-button:active {
         const db = getFirestore(app);
 
         window.fbDB = db;
-        window.fbFns = { collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction };
+        window.fbFns = { collection, addDoc, getDocs, getDoc, query, where, deleteDoc, doc, updateDoc, runTransaction, orderBy, limit, startAfter };
         console.log('✅ Firebase ready');
 
         try {
@@ -627,7 +625,7 @@ input[type="file"]::file-selector-button:active {
             }
             if (typeof directorMode !== 'undefined' && directorMode) {
                 if (typeof window.loadDirectorOrders === 'function') window.loadDirectorOrders();
-                if (typeof window.loadRevisions === 'function') window.loadRevisions();
+                if (typeof window.loadRevisions === 'function') window.loadRevisions(true);
             }
         } catch(e) { console.error('Post-firebase load error:', e); }
 
@@ -851,7 +849,7 @@ window.showScreen = function(id) {
     if (id === 'screen-director' && window.fbDB) {
         try { if (window.loadDirectorOrders) window.loadDirectorOrders(); } catch(e) {}
         try { if (window.loadCatalog) window.loadCatalog(true, true); } catch(e) {}
-        try { if (window.loadRevisions) window.loadRevisions(); } catch(e) {}
+        try { if (window.loadRevisions) window.loadRevisions(true); } catch(e) {}
         renderDirectorScanList();
     }
 };
@@ -883,7 +881,7 @@ window.loginSeller = function() {
         showScreen('screen-seller');
         renderScanList();
         if (typeof loadBarcodes === 'function') loadBarcodes();
-        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof loadRevisions === 'function') loadRevisions(true);
         if (typeof updateOnlineStatus === 'function') updateOnlineStatus();
         if (window.fbDB) {
             try { if (window.loadMyOrders) window.loadMyOrders(); } catch(e) {}
@@ -905,6 +903,11 @@ window.logout = function() {
     barcodesLoadedFor = '';
     directorBarcodeDB = {};
     directorBarcodesLoadedFor = '';
+
+    revisionsCache = [];
+    revisionsLastDoc = null;
+    revisionsHasMore = true;
+    revisionsCurrentKey = null;
 
     var pills = document.querySelectorAll('#shop-pills .size-pill');
     for (var i = 0; i < pills.length; i++) pills[i].classList.remove('active');
@@ -959,7 +962,7 @@ window.switchMainTab = function(tab) {
     if (tab === 'scanner') {
         if (typeof loadBarcodes === 'function') loadBarcodes();
         renderScanList();
-        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof loadRevisions === 'function') loadRevisions(true);
         if (typeof updateOnlineStatus === 'function') updateOnlineStatus();
     }
 };
@@ -976,7 +979,7 @@ window.switchDirTab = function(tab) {
     if (tab === 'scanner') {
         if (typeof loadDirectorBarcodes === 'function') loadDirectorBarcodes();
         renderDirectorScanList();
-        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof loadRevisions === 'function') loadRevisions(true);
         if (typeof updateOnlineStatus === 'function') updateOnlineStatus();
     }
 };
@@ -1265,219 +1268,8 @@ function renderOrderCard(o, isDirector) {
         commentHtml + actionsHtml + '</div>';
 }
 
-
-
-var ordersInPage = 20;   // Сколько заказов показывать сразу
-var ordersOutPage = 20;
-
 window.loadMyOrders = async function() {
     if (!window.fbDB) {
-        var inEl0 = document.getElementById('orders-incoming-list');
-        if (inEl0) inEl0.innerHTML = getEmptyStateHTML('Нет связи', 'База данных недоступна', 'box');
-        var outEl0 = document.getElementById('orders-outgoing-list');
-        if (outEl0) outEl0.innerHTML = getEmptyStateHTML('Нет связи', 'База данных недоступна', 'box');
-        return;
-    }
-
-    ordersInPage = 20;
-    ordersOutPage = 20;
-
-    var inEl = document.getElementById('orders-incoming-list');
-    var outEl = document.getElementById('orders-outgoing-list');
-    
-    if (inEl) inEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div><div class="skeleton-line" style="width:60%;"></div></div>';
-    if (outEl) outEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div><div class="skeleton-line" style="width:60%;"></div></div>';
-
-    await Promise.all([
-        loadIncomingOrders(ordersInPage, true),
-        loadOutgoingOrders(ordersOutPage, true)
-    ]);
-};
-
-async function loadIncomingOrders(limitCount, isFirstLoad) {
-    var inEl = document.getElementById('orders-incoming-list');
-    if (!inEl) return;
-
-    try {
-        var q = window.fbFns.query(
-            window.fbFns.collection(window.fbDB, "orders"),
-            window.fbFns.where("toShop", "==", shop),
-            window.fbFns.orderBy("date", "desc"),
-            window.fbFns.limit(limitCount)
-        );
-        var snap = await window.fbFns.getDocs(q);
-        var arr = [];
-        snap.forEach(function(d) { arr.push(Object.assign({id: d.id}, d.data())); });
-
-        var html = arr.map(function(o) { return renderOrderCard(o); }).join('');
-        
-        if (arr.length === limitCount) {
-            html += '<button class="btn-edit" style="width:100%; padding:16px; margin-top:12px; background:var(--bg-card); border:1px solid #E5E5EA;" onclick="loadMoreIncoming()">Показать еще 20</button>';
-        }
-
-        if (isFirstLoad && arr.length === 0) {
-            inEl.innerHTML = getEmptyStateHTML('Здесь пока пусто', 'Нет входящих запросов', 'box');
-        } else {
-            inEl.innerHTML = html;
-        }
-    } catch(e) {
-        console.log(e);
-        if (isFirstLoad) inEl.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
-        else showToast('Ошибка загрузки', 'error');
-    }
-}
-
-window.loadMoreIncoming = async function() {
-    ordersInPage += 20;
-    var inEl = document.getElementById('orders-incoming-list');
-    if (inEl) inEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div></div>';
-    await loadIncomingOrders(ordersInPage, false);
-};
-
-async function loadOutgoingOrders(limitCount, isFirstLoad) {
-    var outEl = document.getElementById('orders-outgoing-list');
-    if (!outEl) return;
-
-    try {
-        var q = window.fbFns.query(
-            window.fbFns.collection(window.fbDB, "orders"),
-            window.fbFns.where("fromShop", "==", shop),
-            window.fbFns.orderBy("date", "desc"),
-            window.fbFns.limit(limitCount)
-        );
-        var snap = await window.fbFns.getDocs(q);
-        var arr = [];
-        snap.forEach(function(d) { arr.push(Object.assign({id: d.id}, d.data())); });
-
-        var html = arr.map(function(o) { return renderOrderCard(o); }).join('');
-
-        if (arr.length === limitCount) {
-            html += '<button class="btn-edit" style="width:100%; padding:16px; margin-top:12px; background:var(--bg-card); border:1px solid #E5E5EA;" onclick="loadMoreOutgoing()">Показать еще 20</button>';
-        }
-
-        if (isFirstLoad && arr.length === 0) {
-            outEl.innerHTML = getEmptyStateHTML('Здесь пока пусто', 'Нет исходящих запросов', 'box');
-        } else {
-            outEl.innerHTML = html;
-        }
-    } catch(e) {
-        console.log(e);
-        if (isFirstLoad) outEl.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
-        else showToast('Ошибка загрузки', 'error');
-    }
-}
-
-window.loadMoreOutgoing = async function() {
-    ordersOutPage += 20;
-    var outEl = document.getElementById('orders-outgoing-list');
-    if (outEl) outEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div></div>';
-    await loadOutgoingOrders(ordersOutPage, false);
-};
-
-    // Сбрасываем счетчики при каждом новом заходе
-    ordersInPage = 20;
-    ordersOutPage = 20;
-
-    var inEl = document.getElementById('orders-incoming-list');
-    var outEl = document.getElementById('orders-outgoing-list');
-    
-    // Показываем серую заглушку (скелетон), пока грузим
-    if (inEl) inEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div><div class="skeleton-line" style="width:60%;"></div></div>';
-    if (outEl) outEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div><div class="skeleton-line" style="width:60%;"></div></div>';
-
-    // Запускаем загрузку входящих и исходящих одновременно
-    await Promise.all([
-        loadIncomingOrders(ordersInPage, true),
-        loadOutgoingOrders(ordersOutPage, true)
-    ]);
-};
-
-// --- ФУНКЦИИ ДЛЯ ВХОДЯЩИХ ---
-async function loadIncomingOrders(limitCount, isFirstLoad) {
-    var inEl = document.getElementById('orders-incoming-list');
-    if (!inEl) return;
-
-    try {
-        // Ищем заказы для НАШЕГО магазина, сортируем по дате (новые сверху), берем первые 20
-        var q = window.fbFns.query(
-            window.fbFns.collection(window.fbDB, "orders"),
-            window.fbFns.where("toShop", "==", shop),
-            window.fbFns.orderBy("date", "desc"),
-            window.fbFns.limit(limitCount)
-        );
-        var snap = await window.fbFns.getDocs(q);
-        var arr = [];
-        snap.forEach(function(d) { arr.push(Object.assign({id: d.id}, d.data())); });
-
-        var html = arr.map(function(o) { return renderOrderCard(o); }).join('');
-        
-        // Если заказов ровно 20 (или 40 и т.д.) — показываем кнопку "Показать еще"
-        if (arr.length === limitCount) {
-            html += '<button class="btn-edit" style="width:100%; padding:16px; margin-top:12px; background:var(--bg-card); border:1px solid #E5E5EA;" onclick="loadMoreIncoming()">Показать еще 20</button>';
-        }
-
-        if (isFirstLoad && arr.length === 0) {
-            inEl.innerHTML = getEmptyStateHTML('Здесь пока пусто', 'Нет входящих запросов', 'box');
-        } else {
-            inEl.innerHTML = html;
-        }
-    } catch(e) {
-        console.log(e);
-        if (isFirstLoad) inEl.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
-        else showToast('Ошибка загрузки', 'error');
-    }
-}
-
-// Кнопка "Показать еще" для входящих
-window.loadMoreIncoming = async function() {
-    ordersInPage += 20; // Увеличиваем лимит до 40, 60 и т.д.
-    var inEl = document.getElementById('orders-incoming-list');
-    if (inEl) inEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div></div>';
-    await loadIncomingOrders(ordersInPage, false);
-};
-
-// --- ФУНКЦИИ ДЛЯ ИСХОДЯЩИХ ---
-async function loadOutgoingOrders(limitCount, isFirstLoad) {
-    var outEl = document.getElementById('orders-outgoing-list');
-    if (!outEl) return;
-
-    try {
-        // Ищем заказы, которые МЫ отправили, сортируем по дате, берем первые 20
-        var q = window.fbFns.query(
-            window.fbFns.collection(window.fbDB, "orders"),
-            window.fbFns.where("fromShop", "==", shop),
-            window.fbFns.orderBy("date", "desc"),
-            window.fbFns.limit(limitCount)
-        );
-        var snap = await window.fbFns.getDocs(q);
-        var arr = [];
-        snap.forEach(function(d) { arr.push(Object.assign({id: d.id}, d.data())); });
-
-        var html = arr.map(function(o) { return renderOrderCard(o); }).join('');
-
-        if (arr.length === limitCount) {
-            html += '<button class="btn-edit" style="width:100%; padding:16px; margin-top:12px; background:var(--bg-card); border:1px solid #E5E5EA;" onclick="loadMoreOutgoing()">Показать еще 20</button>';
-        }
-
-        if (isFirstLoad && arr.length === 0) {
-            outEl.innerHTML = getEmptyStateHTML('Здесь пока пусто', 'Нет исходящих запросов', 'box');
-        } else {
-            outEl.innerHTML = html;
-        }
-    } catch(e) {
-        console.log(e);
-        if (isFirstLoad) outEl.innerHTML = getEmptyStateHTML('Ошибка', 'Не удалось загрузить заказы', 'box');
-        else showToast('Ошибка загрузки', 'error');
-    }
-}
-
-// Кнопка "Показать еще" для исходящих
-window.loadMoreOutgoing = async function() {
-    ordersOutPage += 20;
-    var outEl = document.getElementById('orders-outgoing-list');
-    if (outEl) outEl.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:80%;"></div></div>';
-    await loadOutgoingOrders(ordersOutPage, false);
-};
         var inEl0 = document.getElementById('orders-incoming-list');
         if (inEl0) inEl0.innerHTML = getEmptyStateHTML('Нет связи', 'База данных недоступна', 'box');
         var outEl0 = document.getElementById('orders-outgoing-list');
@@ -2059,7 +1851,7 @@ async function syncOfflineData() {
     if (ok) {
         try { localStorage.setItem('offline_queue', JSON.stringify(q.slice(ok))); } catch(_) {}
         showToast('✅ Синхронизировано: ' + ok, 'success');
-        if (typeof loadRevisions === 'function') loadRevisions();
+        if (typeof loadRevisions === 'function') loadRevisions(true);
         if (typeof loadMyOrders === 'function' && shop) loadMyOrders();
     }
 }
@@ -2480,7 +2272,10 @@ window.saveInventory = async function() {
             scanList = [];
             persistDraft();
             renderScanList();
-            if (typeof loadRevisions === 'function') loadRevisions();
+            revisionsLastDoc = null;
+            revisionsHasMore = true;
+            revisionsCache = [];
+            if (typeof loadRevisions === 'function') loadRevisions(true);
         };
 
         if (!navigator.onLine || !window.fbDB) {
@@ -3074,6 +2869,30 @@ window.saveEditItem = async function() {
 
 var revisionsCache = [];
 var directorRevisionFilter = 'all';
+var revisionsLastDoc = null;
+var revisionsHasMore = true;
+var revisionsLoading = false;
+var revisionsCurrentKey = null;
+var REVISIONS_PAGE_SIZE = 4;
+
+function getRevisionsFilterKey() {
+    if (directorMode) return 'director|' + directorRevisionFilter;
+    return 'seller|' + (shop || '');
+}
+
+function tryLoadRevisionsFromCache() {
+    var cacheKey = (shop && !directorMode) ? ('revisions_cache_' + shop) : 'revisions_cache_all';
+    try {
+        var cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            revisionsCache = JSON.parse(cached) || [];
+            revisionsHasMore = false;
+            renderRevisionsList();
+        } else {
+            renderRevisionsList();
+        }
+    } catch(_) { renderRevisionsList(); }
+}
 
 function csvEscape(v) {
     var s = String(v == null ? '' : v);
@@ -3122,7 +2941,6 @@ window.downloadRevisionExcel = function(revId) {
 function renderRevisionCard(r) {
     var dateStr = r.date ? new Date(r.date).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
     var items = Array.isArray(r.items) ? r.items : [];
-    var totalPos = (r.totalPositions != null) ? r.totalPositions : items.length;
     var totalQty = (r.totalQty != null) ? r.totalQty : items.reduce(function(s, i) { return s + (Number(i.qty) || 0); }, 0);
     var totalDiff = (r.totalDiff != null) ? r.totalDiff : items.reduce(function(s, i) {
         return s + ((Number(i.system_qty) || 0) > 0 ? ((Number(i.qty) || 0) - Number(i.system_qty)) : 0);
@@ -3143,10 +2961,29 @@ function renderRevisionCard(r) {
     var shopTitle = r.shop || '—';
     var catTitle = (r.revCategory && r.revCategory.trim()) ? r.revCategory : 'Без категории';
     var sellerTitle = r.seller || '—';
-    
     var statsLine = totalQty + ' шт.' + (totalDiff !== 0 ? ' · <span style="color:' + diffColor + ';font-weight:800;">Δ ' + diffStr + '</span>' : '');
 
-    var itemsHtml = items.map(function(i) {
+    return '<div class="rev-card" data-rev-id="' + r.id + '">' +
+        '<div class="rev-header" onclick="toggleDetails(\'' + r.id + '\')">' +
+        '<div>' +
+        '<div class="rev-title">🏪 ' + shopTitle + ' · ' + catTitle + ' · ' + sellerTitle + '</div>' +
+        '<div class="rev-meta">' + dateStr + ' · ' + statsLine + '</div>' +
+        '</div>' +
+        '<div style="font-size:20px; color:var(--text-muted);">▾</div>' +
+        '</div>' +
+        '<div class="rev-details" id="rev-details-' + r.id + '" data-rendered="0">' +
+        '<div class="rev-details-body"></div>' +
+        '<div style="display:flex; gap:8px; margin-top:12px;">' +
+        '<button class="btn-edit" style="flex:1; padding:10px;" onclick="downloadRevisionExcel(\'' + r.id + '\'); event.stopPropagation();">📥 В Excel</button>' +
+        '<button class="btn-del" style="flex:1; padding:10px;" onclick="deleteRevision(\'' + r.id + '\'); event.stopPropagation();">🗑 Удалить</button>' +
+        '</div>' +
+        '</div>' +
+        '</div>';
+}
+
+function buildRevisionItemsHtml(rev) {
+    var items = Array.isArray(rev.items) ? rev.items : [];
+    return items.map(function(i) {
         var sys = (Number(i.system_qty) || 0) > 0 ? ' · Система: ' + i.system_qty : '';
         var cat = i.category ? ' · ' + i.category : '';
         var dept = i.dept ? ' · ' + i.dept : '';
@@ -3165,50 +3002,31 @@ function renderRevisionCard(r) {
             '<strong>' + (i.qty || 0) + ' шт.</strong>' +
             '</div>';
     }).join('');
-
-    return '<div class="rev-card" data-rev-id="' + r.id + '">' +
-        '<div class="rev-header" onclick="toggleDetails(\'' + r.id + '\')">' +
-        '<div>' +
-        '<div class="rev-title">🏪 ' + shopTitle + ' · ' + catTitle + ' · ' + sellerTitle + '</div>' +
-        '<div class="rev-meta">' + dateStr + ' · ' + statsLine + '</div>' +
-        '</div>' +
-        '<div style="font-size:20px; color:var(--text-muted);">▾</div>' +
-        '</div>' +
-        '<div class="rev-details" id="rev-details-' + r.id + '">' +
-        itemsHtml +
-        '<div style="display:flex; gap:8px; margin-top:12px;">' +
-        '<button class="btn-edit" style="flex:1; padding:10px;" onclick="downloadRevisionExcel(\'' + r.id + '\'); event.stopPropagation();">📥 В Excel</button>' +
-        '<button class="btn-del" style="flex:1; padding:10px;" onclick="deleteRevision(\'' + r.id + '\'); event.stopPropagation();">🗑 Удалить</button>' +
-        '</div>' +
-        '</div>' +
-        '</div>';
 }
 
 function renderRevisionsList() {
+    var loadMoreBtn = function() {
+        if (!revisionsHasMore) return '';
+        return '<button class="btn-main" style="margin-top:12px; width:100%;" onclick="loadMoreRevisions()" ' +
+               (revisionsLoading ? 'disabled' : '') + '>' +
+               (revisionsLoading ? '⏳ Загрузка...' : 'Показать ещё') + '</button>';
+    };
+
     var sellerEl = document.getElementById('seller-revisions-list');
     if (sellerEl) {
-        var sellerList = revisionsCache.filter(function(r) { return r.shop === shop; });
-        sellerList.sort((a, b) => new Date(b.date) - new Date(a.date)); 
-        
-        if (sellerList.length === 0) {
+        if (revisionsCache.length === 0) {
             sellerEl.innerHTML = getEmptyStateHTML('Нет ревизий', 'Сохранённых ревизий пока нет', 'box');
         } else {
-            sellerEl.innerHTML = sellerList.map(renderRevisionCard).join('');
+            sellerEl.innerHTML = revisionsCache.map(renderRevisionCard).join('') + loadMoreBtn();
         }
     }
 
     var directorEl = document.getElementById('director-revisions-list');
     if (directorEl) {
-        var list = revisionsCache.slice();
-        if (directorRevisionFilter !== 'all') {
-            list = list.filter(function(r) { return r.shop === directorRevisionFilter; });
-        }
-        list.sort((a, b) => new Date(b.date) - new Date(a.date)); 
-        
-        if (list.length === 0) {
+        if (revisionsCache.length === 0) {
             directorEl.innerHTML = getEmptyStateHTML('Нет ревизий', 'Ревизий пока нет', 'box');
         } else {
-            directorEl.innerHTML = list.map(renderRevisionCard).join('');
+            directorEl.innerHTML = revisionsCache.map(renderRevisionCard).join('') + loadMoreBtn();
         }
     }
 }
@@ -3217,6 +3035,20 @@ window.toggleDetails = function(id) {
     var el = document.getElementById('rev-details-' + id);
     if (!el) return;
     el.classList.toggle('open');
+
+    if (el.classList.contains('open') && el.dataset.rendered !== '1') {
+        var rev = null;
+        for (var i = 0; i < revisionsCache.length; i++) {
+            if (revisionsCache[i].id === id) { rev = revisionsCache[i]; break; }
+        }
+        if (rev) {
+            var bodyEl = el.querySelector('.rev-details-body');
+            if (bodyEl) {
+                bodyEl.innerHTML = buildRevisionItemsHtml(rev);
+                el.dataset.rendered = '1';
+            }
+        }
+    }
 };
 
 window.toggleDirectorRevisionFilter = function(type) {
@@ -3231,7 +3063,10 @@ window.toggleDirectorRevisionFilter = function(type) {
     for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
     var target = document.getElementById(ids[type]);
     if (target) target.classList.add('active');
-    renderRevisionsList();
+    revisionsLastDoc = null;
+    revisionsHasMore = true;
+    revisionsCache = [];
+    loadRevisions(true);
 };
 
 window.deleteRevision = async function(id) {
@@ -3241,7 +3076,10 @@ window.deleteRevision = async function(id) {
         try {
             await window.fbFns.deleteDoc(window.fbFns.doc(window.fbDB, 'revisions', id));
             showToast('Удалено', 'success');
-            loadRevisions();
+            revisionsLastDoc = null;
+            revisionsHasMore = true;
+            revisionsCache = [];
+            loadRevisions(true);
         } catch (e) {
             console.error(e);
             showToast('Ошибка удаления', 'error');
@@ -3249,62 +3087,103 @@ window.deleteRevision = async function(id) {
     });
 };
 
-window.loadRevisions = async function() {
-    var cacheKey = shop ? ('revisions_cache_' + shop) : 'revisions_cache_all';
+async function fetchRevisionsPage() {
+    if (!window.fbDB || !navigator.onLine) return false;
+    if (!revisionsHasMore) return false;
 
-    if (!navigator.onLine || !window.fbDB) {
-        try {
-            var cached = localStorage.getItem(cacheKey);
-            if (cached) {
-                revisionsCache = JSON.parse(cached) || [];
-                renderRevisionsList();
-            } else {
-                var cachedAll = localStorage.getItem('revisions_cache_all');
-                if (cachedAll) {
-                    revisionsCache = JSON.parse(cachedAll) || [];
-                    renderRevisionsList();
-                }
-            }
-        } catch(_) {}
-        return;
+    var ref = window.fbFns.collection(window.fbDB, 'revisions');
+    var constraints = [];
+
+    if (directorMode) {
+        if (directorRevisionFilter !== 'all') {
+            constraints.push(window.fbFns.where('shop', '==', directorRevisionFilter));
+        }
+    } else if (shop) {
+        constraints.push(window.fbFns.where('shop', '==', shop));
+    } else {
+        return false;
     }
 
     try {
-        var snapshot;
-        if (directorMode) {
-            snapshot = await window.fbFns.getDocs(window.fbFns.collection(window.fbDB, 'revisions'));
-        } else if (shop) {
-            var q = window.fbFns.query(
-                window.fbFns.collection(window.fbDB, 'revisions'),
-                window.fbFns.where('shop', '==', shop)
-            );
-            snapshot = await window.fbFns.getDocs(q);
-        } else {
-            return;
+        var pageConstraints = constraints.slice();
+        pageConstraints.push(window.fbFns.orderBy('date', 'desc'));
+        pageConstraints.push(window.fbFns.limit(REVISIONS_PAGE_SIZE));
+        if (revisionsLastDoc) pageConstraints.push(window.fbFns.startAfter(revisionsLastDoc));
+
+        var q = window.fbFns.query.apply(null, [ref].concat(pageConstraints));
+        var snap = await window.fbFns.getDocs(q);
+
+        if (snap.docs.length < REVISIONS_PAGE_SIZE) revisionsHasMore = false;
+        if (snap.docs.length > 0) revisionsLastDoc = snap.docs[snap.docs.length - 1];
+
+        snap.forEach(function(d) { revisionsCache.push(Object.assign({id: d.id}, d.data())); });
+
+        try {
+            var cacheKey = directorMode ? 'revisions_cache_all' : 'revisions_cache_' + shop;
+            localStorage.setItem(cacheKey, JSON.stringify(revisionsCache));
+        } catch(_) {}
+
+        return true;
+    } catch(e) {
+        console.warn('Paginated revisions query failed, fallback:', e && (e.message || e.code));
+        try {
+            var fallbackQ = constraints.length
+                ? window.fbFns.query.apply(null, [ref].concat(constraints))
+                : ref;
+            var fallbackSnap = await window.fbFns.getDocs(fallbackQ);
+            fallbackSnap.forEach(function(d) { revisionsCache.push(Object.assign({id: d.id}, d.data())); });
+            revisionsCache.sort(function(a, b) { return new Date(b.date) - new Date(a.date); });
+            revisionsHasMore = false;
+            try {
+                var cacheKey2 = directorMode ? 'revisions_cache_all' : 'revisions_cache_' + shop;
+                localStorage.setItem(cacheKey2, JSON.stringify(revisionsCache));
+            } catch(_) {}
+            return true;
+        } catch(e2) {
+            console.error('Fallback revisions load failed:', e2);
+            return false;
         }
-        var revs = [];
-        snapshot.forEach(function(d) { revs.push(Object.assign({id: d.id}, d.data())); });
-        revisionsCache = revs;
+    }
+}
 
-        try {
-            if (directorMode) {
-                localStorage.setItem('revisions_cache_all', JSON.stringify(revs));
-            }
-            if (shop) {
-                localStorage.setItem('revisions_cache_' + shop, JSON.stringify(revs.filter(function(r) { return r.shop === shop; })));
-            }
-        } catch(_) {}
-
+window.loadMoreRevisions = async function() {
+    if (revisionsLoading || !revisionsHasMore) return;
+    revisionsLoading = true;
+    renderRevisionsList();
+    try {
+        await fetchRevisionsPage();
+    } finally {
+        revisionsLoading = false;
         renderRevisionsList();
-    } catch (e) {
-        console.error('loadRevisions', e);
-        try {
-            var cached2 = localStorage.getItem(cacheKey);
-            if (cached2) {
-                revisionsCache = JSON.parse(cached2) || [];
-                renderRevisionsList();
-            }
-        } catch(_) {}
+    }
+};
+
+window.loadRevisions = async function(forceReset) {
+    var key = getRevisionsFilterKey();
+
+    if (forceReset || revisionsCurrentKey !== key) {
+        revisionsCurrentKey = key;
+        revisionsLastDoc = null;
+        revisionsHasMore = true;
+        revisionsCache = [];
+    } else if (revisionsCache.length > 0) {
+        renderRevisionsList();
+        return;
+    }
+
+    if (!navigator.onLine || !window.fbDB) {
+        tryLoadRevisionsFromCache();
+        return;
+    }
+
+    if (revisionsLoading) return;
+    revisionsLoading = true;
+    renderRevisionsList();
+    try {
+        await fetchRevisionsPage();
+    } finally {
+        revisionsLoading = false;
+        renderRevisionsList();
     }
 };
 
@@ -3329,7 +3208,7 @@ function initApp() {
             showScreen('screen-seller');
             renderScanList();
             loadBarcodes();
-            loadRevisions();
+            loadRevisions(true);
             updateOnlineStatus();
         } else {
             showScreen('screen-auth');
